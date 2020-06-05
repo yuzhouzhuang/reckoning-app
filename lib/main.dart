@@ -1,169 +1,144 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:wave/wave.dart';
-import 'package:wave/config.dart';
-import 'bloc/bloc.dart';
-import 'bloc/ticker.dart';
 
-void main() => runApp(MyApp());
+import 'bloc.dart';
+import 'post.dart';
 
-class MyApp extends StatelessWidget {
+class SimpleBlocDelegate extends BlocDelegate {
+  @override
+  void onTransition(Bloc bloc, Transition transition) {
+    print(transition);
+    super.onTransition(bloc, transition);
+  }
+}
+
+void main() {
+  BlocSupervisor.delegate = SimpleBlocDelegate();
+  runApp(App());
+}
+
+class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-        primaryColor: Color.fromRGBO(109, 234, 255, 1),
-        accentColor: Color.fromRGBO(72, 74, 126, 1),
-        brightness: Brightness.dark,
-      ),
-      title: 'Flutter Timer',
-      home: BlocProvider(
-        create: (context) => TimerBloc(ticker: Ticker()),
-        child: Timer(),
+      title: 'Flutter Infinite Scroll',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Posts'),
+        ),
+        body: BlocProvider(
+          create: (context) =>
+          PostBloc(httpClient: http.Client())..add(Fetch()),
+          child: HomePage(),
+        ),
       ),
     );
   }
 }
 
-class Timer extends StatelessWidget {
-  static const TextStyle timerTextStyle = TextStyle(
-    fontSize: 60,
-    fontWeight: FontWeight.bold,
-  );
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final _scrollController = ScrollController();
+  final _scrollThreshold = 200.0;
+  PostBloc _postBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    _postBloc = BlocProvider.of<PostBloc>(context);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Flutter Timer')),
-      body: Stack(children: [
-        Background(),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 100.0),
-              child: Center(
-                child: BlocBuilder<TimerBloc, TimerState>(
-                  builder: (context, state) {
-                    final String minutesStr = ((state.duration / 60) % 60)
-                        .floor()
-                        .toString()
-                        .padLeft(2, '0');
-                    final String secondsStr = (state.duration % 60)
-                        .floor()
-                        .toString()
-                        .padLeft(2, '0');
-                    return Text(
-                      '$minutesStr:$secondsStr',
-                      style: Timer.timerTextStyle,
-                    );
-                  },
-                ),
-              ),
-            ),
-            BlocBuilder<TimerBloc, TimerState>(
-              condition: (previousState, state) =>
-                  state.runtimeType != previousState.runtimeType,
-              builder: (context, state) => Actions(),
-            ),
-          ],
+    return BlocBuilder<PostBloc, PostState>(
+      builder: (context, state) {
+        if (state is PostUninitialized) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+        if (state is PostError) {
+          return Center(
+            child: Text('failed to fetch posts'),
+          );
+        }
+        if (state is PostLoaded) {
+          if (state.posts.isEmpty) {
+            return Center(
+              child: Text('no posts'),
+            );
+          }
+          return ListView.builder(
+            itemBuilder: (BuildContext context, int index) {
+              return index >= state.posts.length
+                  ? BottomLoader()
+                  : PostWidget(post: state.posts[index]);
+            },
+            itemCount: state.hasReachedMax
+                ? state.posts.length
+                : state.posts.length + 1,
+            controller: _scrollController,
+          );
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    if (maxScroll - currentScroll <= _scrollThreshold) {
+      _postBloc.add(Fetch());
+    }
+  }
+}
+
+class BottomLoader extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      child: Center(
+        child: SizedBox(
+          width: 33,
+          height: 33,
+          child: CircularProgressIndicator(
+            strokeWidth: 1.5,
+          ),
         ),
-      ]),
+      ),
     );
   }
 }
 
-class Actions extends StatelessWidget {
+class PostWidget extends StatelessWidget {
+  final Post post;
+
+  const PostWidget({Key key, @required this.post}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: _mapStateToActionButtons(
-        timerBloc: BlocProvider.of<TimerBloc>(context),
+    return ListTile(
+      leading: Text(
+        '${post.id}',
+        style: TextStyle(fontSize: 10.0),
       ),
-    );
-  }
-
-  List<Widget> _mapStateToActionButtons({
-    TimerBloc timerBloc,
-  }) {
-    final TimerState currentState = timerBloc.state;
-    if (currentState is Ready) {
-      return [
-        FloatingActionButton(
-          child: Icon(Icons.play_arrow),
-          onPressed: () =>
-              timerBloc.add(Start(duration: currentState.duration)),
-        ),
-      ];
-    }
-    if (currentState is Running) {
-      return [
-        FloatingActionButton(
-          child: Icon(Icons.pause),
-          onPressed: () => timerBloc.add(Pause()),
-        ),
-        FloatingActionButton(
-          child: Icon(Icons.replay),
-          onPressed: () => timerBloc.add(Reset()),
-        ),
-      ];
-    }
-    if (currentState is Paused) {
-      return [
-        FloatingActionButton(
-          child: Icon(Icons.play_arrow),
-          onPressed: () => timerBloc.add(Resume()),
-        ),
-        FloatingActionButton(
-          child: Icon(Icons.replay),
-          onPressed: () => timerBloc.add(Reset()),
-        ),
-      ];
-    }
-    if (currentState is Finished) {
-      return [
-        FloatingActionButton(
-          child: Icon(Icons.replay),
-          onPressed: () => timerBloc.add(Reset()),
-        ),
-      ];
-    }
-    return [];
-  }
-}
-
-class Background extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return WaveWidget(
-      config: CustomConfig(
-        gradients: [
-          [
-            Color.fromRGBO(72, 74, 126, 1),
-            Color.fromRGBO(125, 170, 206, 1),
-            Color.fromRGBO(184, 189, 245, 0.7)
-          ],
-          [
-            Color.fromRGBO(72, 74, 126, 1),
-            Color.fromRGBO(125, 170, 206, 1),
-            Color.fromRGBO(172, 182, 219, 0.7)
-          ],
-          [
-            Color.fromRGBO(72, 73, 126, 1),
-            Color.fromRGBO(125, 170, 206, 1),
-            Color.fromRGBO(190, 238, 246, 0.7)
-          ],
-        ],
-        durations: [19440, 10800, 6000],
-        heightPercentages: [0.03, 0.01, 0.02],
-        gradientBegin: Alignment.bottomCenter,
-        gradientEnd: Alignment.topCenter,
-      ),
-      size: Size(double.infinity, double.infinity),
-      waveAmplitude: 25,
-      backgroundColor: Colors.blue[50],
+      title: Text(post.title),
+      isThreeLine: true,
+      subtitle: Text(post.body),
+      dense: true,
     );
   }
 }
