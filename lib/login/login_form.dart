@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutterApp/login/create_account_button.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterApp/user_repository.dart';
-import 'package:flutterApp/authentication_bloc/authentication_bloc.dart';
+import 'package:flutterApp/authentication/bloc/bloc.dart';
 import 'package:flutterApp/login/login.dart';
 
 class LoginForm extends StatefulWidget {

@@ -3,9 +3,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutterApp/user_repository.dart';
 import 'package:meta/meta.dart';
-
-part 'authentication_event.dart';
-part 'authentication_state.dart';
+import 'package:flutterApp/authentication/bloc/bloc.dart';
 
 class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> {
   final UserRepository _userRepository;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutterApp/home_screen.dart';
 import 'package:flutterApp/login/login_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutterApp/authentication_bloc/authentication_bloc.dart';
+import 'package:flutterApp/authentication/bloc/bloc.dart';
 import 'package:flutterApp/user_repository.dart';
 import 'package:flutterApp/simple_bloc_delegate.dart';
 import 'package:flutterApp/splash_screen.dart';

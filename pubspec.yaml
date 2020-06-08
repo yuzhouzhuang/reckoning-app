@@ -24,7 +24,8 @@ dependencies:
   flutter:
     sdk: flutter
   bloc:
-  flutter_bloc: ^4.0.0
+  flutter_bloc:
+  cloud_firestore:
   equatable:
   meta:
   rxdart:
