@@ -1,84 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:bloc/bloc.dart';
+import 'package:flutterApp/home_screen.dart';
+import 'package:flutterApp/login/login_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_firestore_todos/blocs/authentication_bloc/bloc.dart';
-import 'package:todos_repository/todos_repository.dart';
-import 'package:flutter_firestore_todos/blocs/blocs.dart';
-import 'package:flutter_firestore_todos/screens/screens.dart';
-import 'package:user_repository/user_repository.dart';
-
+import 'package:flutterApp/authentication/bloc/bloc.dart';
+import 'package:flutterApp/user_repository.dart';
+import 'package:flutterApp/simple_bloc_delegate.dart';
+import 'package:flutterApp/splash_screen.dart';
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   BlocSupervisor.delegate = SimpleBlocDelegate();
-  runApp(TodosApp());
+  final UserRepository userRepository = UserRepository();
+  runApp(BlocProvider(
+    create: (context) =>
+        AuthenticationBloc(userRepository: userRepository)..add(AppStarted()),
+    child: App(userRepository: userRepository,),
+  ));
 }
 
-class TodosApp extends StatelessWidget {
+class App extends StatelessWidget {
+  final UserRepository _userRepository;
+
+  App({Key key, @required UserRepository userRepository})
+      : assert(userRepository != null),
+        _userRepository = userRepository,
+        super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<AuthenticationBloc>(
-          create: (context) {
-            return AuthenticationBloc(
-              userRepository: FirebaseUserRepository(),
-            )..add(AppStarted());
-          },
-        ),
-        BlocProvider<TodosBloc>(
-          create: (context) {
-            return TodosBloc(
-              todosRepository: FirebaseTodosRepository(),
-            )..add(LoadTodos());
-          },
-        )
-      ],
-      child: MaterialApp(
-        title: 'Firestore Todos',
-        routes: {
-          '/': (context) {
-            return BlocBuilder<AuthenticationBloc, AuthenticationState>(
-              builder: (context, state) {
-                if (state is Authenticated) {
-                  return MultiBlocProvider(
-                    providers: [
-                      BlocProvider<TabBloc>(
-                        create: (context) => TabBloc(),
-                      ),
-                      BlocProvider<FilteredTodosBloc>(
-                        create: (context) => FilteredTodosBloc(
-                          todosBloc: BlocProvider.of<TodosBloc>(context),
-                        ),
-                      ),
-                      BlocProvider<StatsBloc>(
-                        create: (context) => StatsBloc(
-                          todosBloc: BlocProvider.of<TodosBloc>(context),
-                        ),
-                      ),
-                    ],
-                    child: HomeScreen(),
-                  );
-                }
-                if (state is Unauthenticated) {
-                  return Center(
-                    child: Text('Could not authenticate with Firestore'),
-                  );
-                }
-                return Center(child: CircularProgressIndicator());
-              },
-            );
-          },
-          '/addTodo': (context) {
-            return AddEditScreen(
-              onSave: (task, note) {
-                BlocProvider.of<TodosBloc>(context).add(
-                  AddTodo(Todo(task, note: note)),
-                );
-              },
-              isEditing: false,
-            );
-          },
-        },
-      ),
+    return MaterialApp(
+      home: BlocBuilder<AuthenticationBloc, AuthenticationState>(builder:  (context, state) {
+        if (state is Uninitialized) {
+          return SplashScreen();
+        }
+
+        if (state is Authenticated) {
+          return HomeScreen(name: state.displayName);
+        }
+
+        if (state is Unauthenticated) {
+          return LoginScreen(userRepository: _userRepository);
+        }
+        return Container();
+      }),
     );
   }
 }
