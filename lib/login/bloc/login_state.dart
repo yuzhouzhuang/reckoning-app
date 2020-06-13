@@ -1,101 +1,71 @@
+import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
-@immutable
-class LoginState {
-  final bool isEmailValid;
-  final bool isPasswordValid;
-  final bool isSubmitting;
-  final bool isSuccess;
-  final bool isFailure;
+abstract class LoginState extends Equatable {
+  const LoginState();
 
-  bool get isFormValid => isEmailValid && isPasswordValid;
+  @override
+  List<Object> get props => [];
+}
 
-  LoginState({
-    @required this.isEmailValid,
-    @required this.isPasswordValid,
-    @required this.isSubmitting,
-    @required this.isSuccess,
-    @required this.isFailure,
-  });
 
-  factory LoginState.empty() {
-    return LoginState(
-      isEmailValid: true,
-      isPasswordValid: true,
-      isSubmitting: false,
-      isSuccess: false,
-      isFailure: false,
-    );
-  }
+class LoginInitial extends LoginState {}
 
-  factory LoginState.loading() {
-    return LoginState(
-      isEmailValid: true,
-      isPasswordValid: true,
-      isSubmitting: true,
-      isSuccess: false,
-      isFailure: false,
-    );
-  }
+class LoginInvalidPhoneNumber extends LoginState {
+  final String phoneNumber;
 
-  factory LoginState.failure() {
-    return LoginState(
-      isEmailValid: true,
-      isPasswordValid: true,
-      isSubmitting: false,
-      isSuccess: false,
-      isFailure: true,
-    );
-  }
+  const LoginInvalidPhoneNumber({@required this.phoneNumber});
 
-  factory LoginState.success() {
-    return LoginState(
-      isEmailValid: true,
-      isPasswordValid: true,
-      isSubmitting: false,
-      isSuccess: true,
-      isFailure: false,
-    );
-  }
-
-  LoginState update({
-    bool isEmailValid,
-    bool isPasswordValid,
-  }) {
-    return copyWith(
-      isEmailValid: isEmailValid,
-      isPasswordValid: isPasswordValid,
-      isSubmitting: false,
-      isSuccess: false,
-      isFailure: false,
-    );
-  }
-
-  LoginState copyWith({
-    bool isEmailValid,
-    bool isPasswordValid,
-    bool isSubmitEnabled,
-    bool isSubmitting,
-    bool isSuccess,
-    bool isFailure,
-  }) {
-    return LoginState(
-      isEmailValid: isEmailValid ?? this.isEmailValid,
-      isPasswordValid: isPasswordValid ?? this.isPasswordValid,
-      isSubmitting: isSubmitting ?? this.isSubmitting,
-      isSuccess: isSuccess ?? this.isSuccess,
-      isFailure: isFailure ?? this.isFailure,
-    );
-  }
+  @override
+  List<Object> get props => [phoneNumber];
 
   @override
   String toString() {
-    return '''LoginState {
-      isEmailValid: $isEmailValid,
-      isPasswordValid: $isPasswordValid,
-      isSubmitting: $isSubmitting,
-      isSuccess: $isSuccess,
-      isFailure: $isFailure,
-    }''';
+    return 'InvalidPhoneNumber { phoneNumber: $phoneNumber }';
+  }
+}
+
+class LoginValidPhoneNumber extends LoginState {
+  final String phoneNumber;
+  final String verificationId;
+
+  const LoginValidPhoneNumber({@required this.phoneNumber, @required this.verificationId});
+
+  @override
+  List<Object> get props => [phoneNumber, verificationId];
+
+  @override
+  String toString() {
+    return 'ValidPhoneNumber { phoneNumber: $phoneNumber, verificationId: $verificationId }';
+  }
+}
+
+class LoginInvalidSMSCode extends LoginState {
+  final String phoneNumber;
+  final String verificationId;
+
+  const LoginInvalidSMSCode({@required this.phoneNumber, @required this.verificationId});
+
+  @override
+  List<Object> get props => [phoneNumber, verificationId];
+
+  @override
+  String toString() {
+    return 'InValidSMSCode { phoneNumber: $phoneNumber, verificationId: $verificationId }';
+  }
+}
+
+class LoginValidSMSCode extends LoginState {
+  final String phoneNumber;
+  final String verificationId;
+
+  const LoginValidSMSCode({@required this.phoneNumber, @required this.verificationId});
+
+  @override
+  List<Object> get props => [phoneNumber, verificationId];
+
+  @override
+  String toString() {
+    return 'ValidSMSCode { phoneNumber: $phoneNumber, verificationId: $verificationId }';
   }
 }

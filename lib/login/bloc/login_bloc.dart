@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterApp/user_repository.dart';
 import 'package:meta/meta.dart';
-import 'package:flutterApp/validators.dart';
 import 'package:flutterApp/login/login.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
@@ -14,63 +14,109 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         _userRepository = userRepository;
 
   @override
-  LoginState get initialState => LoginState.empty();
-
-  @override
-  Stream<Transition<LoginEvent, LoginState>> transformEvents(
-      Stream<LoginEvent> events, transitionFn) {
-    final nonDebounceStream = events.where(
-        (event) => (event is! EmailChanged && event is! PasswordChanged));
-    final debounceStream = events
-        .where((event) => (event is EmailChanged || event is PasswordChanged))
-        .debounceTime(Duration(milliseconds: 300));
-    return super.transformEvents(
-        nonDebounceStream.mergeWith([debounceStream]), transitionFn);
-  }
+  LoginState get initialState => LoginInitial();
 
   @override
   Stream<LoginState> mapEventToState(
     LoginEvent event,
   ) async* {
-    if (event is EmailChanged) {
-      yield* _mapEmailChangedToState(event.email);
-    } else if (event is PasswordChanged) {
-      yield* _mapPasswordChangedToState(event.password);
-    } else if (event is LoginWithGooglePressed) {
-      yield* _mapLoginWithGooglePressedToState();
-    } else if (event is LoginWithCredentialsPressed) {
-      yield* _mapLoginWithCredentialsPressedToState(
-          email: event.email, password: event.password);
+    if (event is VerifyPhonePressed) {
+      yield* _mapVerifyPhonePressedToState(event.phoneNumber);
+    } else if (event is ValidateOtpPressed) {
+      yield* _mapValidateOtpPressedToState(event.smsCode);
+    } else if (event is ResendCodePressed) {
+      yield* _mapResendCodePressedToState();
     }
   }
 
-  Stream<LoginState> _mapEmailChangedToState(String email) async* {
-    yield state.update(isEmailValid: Validators.isValidEmail(email));
+  Stream<LoginState> _mapVerifyPhonePressedToState(String phoneNumber) async* {
+    await _userRepository.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        timeout: const Duration(seconds: 60),
+        verificationCompleted: (AuthCredential auth) async* {
+          print('VerificationCompleted { phoneNumber: $phoneNumber}');
+        },
+        verificationFailed: (AuthException authException) async* {
+          print('Error message: ' + authException.message);
+          yield LoginInvalidPhoneNumber(phoneNumber: phoneNumber);
+        },
+        codeSent: (String verificationId, [int forceResendingToken]) async* {
+          yield LoginValidPhoneNumber(
+            phoneNumber: phoneNumber,
+            verificationId: verificationId,
+          );
+        },
+        codeAutoRetrievalTimeout: (String verificationId) async* {
+          yield LoginValidPhoneNumber(
+            phoneNumber: phoneNumber,
+            verificationId: verificationId,
+          );
+        });
   }
 
-  Stream<LoginState> _mapPasswordChangedToState(String password) async* {
-    yield state.update(isPasswordValid: Validators.isValidPassword(password));
-  }
+  Stream<LoginState> _mapValidateOtpPressedToState(String smsCode) async* {
+    final currentState = state;
 
-  Stream<LoginState> _mapLoginWithGooglePressedToState() async* {
-    try {
-      await _userRepository.signInWithGoogle();
-      yield LoginState.success();
-    } catch (_) {
-      yield LoginState.failure();
+    if (currentState is LoginValidPhoneNumber) {
+      try {
+        await _userRepository.validateOtpAndLogin(
+            currentState.verificationId, smsCode);
+        yield LoginValidSMSCode(
+          phoneNumber: currentState.phoneNumber,
+          verificationId: currentState.verificationId,
+        );
+      } catch (_) {
+        yield LoginInvalidSMSCode(
+          phoneNumber: currentState.phoneNumber,
+          verificationId: currentState.verificationId,
+        );
+      }
+    } else if (currentState is LoginInvalidSMSCode) {
+      try {
+        await _userRepository.validateOtpAndLogin(
+            currentState.verificationId, smsCode);
+        yield LoginValidSMSCode(
+          phoneNumber: currentState.phoneNumber,
+          verificationId: currentState.verificationId,
+        );
+      } catch (_) {
+        yield LoginInvalidSMSCode(
+          phoneNumber: currentState.phoneNumber,
+          verificationId: currentState.verificationId,
+        );
+      }
     }
   }
 
-  Stream<LoginState> _mapLoginWithCredentialsPressedToState({
-    String email,
-    String password,
-  }) async* {
-    yield LoginState.loading();
-    try {
-      await _userRepository.signInWithCredentials(email, password);
-      yield LoginState.success();
-    } catch (_) {
-      yield LoginState.failure();
+  Stream<LoginState> _mapResendCodePressedToState() async* {
+    final currentState = state;
+
+    if (currentState is LoginInvalidSMSCode) {
+      try {
+        String actualCode;
+        await _userRepository.verifyPhoneNumber(
+            phoneNumber: currentState.phoneNumber,
+            timeout: const Duration(seconds: 60),
+            verificationCompleted: (AuthCredential auth) async {
+              print(
+                  'VerifivationCompleted { phoneNumber: $currentState.phoneNumber}');
+            },
+            verificationFailed: (AuthException authException) async {
+              throw new Exception('Error message: ' + authException.message);
+            },
+            codeSent: (String verificationId, [int forceResendingToken]) async {
+              actualCode = verificationId;
+            },
+            codeAutoRetrievalTimeout: (String verificationId) {
+              actualCode = verificationId;
+            });
+        yield LoginValidPhoneNumber(
+          phoneNumber: currentState.phoneNumber,
+          verificationId: actualCode,
+        );
+      } catch (_) {
+        yield LoginInvalidPhoneNumber(phoneNumber: currentState.phoneNumber);
+      }
     }
   }
 }

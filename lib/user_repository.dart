@@ -1,42 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:meta/meta.dart';
 
 class UserRepository {
   final FirebaseAuth _firebaseAuth;
-  final GoogleSignIn _googleSignIn;
 
-  UserRepository({FirebaseAuth firebaseAuth, GoogleSignIn googleSignIn})
-      : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
-        _googleSignIn = googleSignIn ?? GoogleSignIn();
-
-  Future<FirebaseUser> signInWithGoogle() async {
-    final GoogleSignInAccount googleSignInAccount =
-        await _googleSignIn.signIn();
-    final GoogleSignInAuthentication googleSignInAuthentication =
-        await googleSignInAccount.authentication;
-    final AuthCredential authCredential = GoogleAuthProvider.getCredential(
-        idToken: googleSignInAuthentication.idToken,
-        accessToken: googleSignInAuthentication.accessToken);
-    await _firebaseAuth.signInWithCredential(authCredential);
-    return _firebaseAuth.currentUser();
-  }
-
-  Future<void> signInWithCredentials(String email, String password) {
-    return _firebaseAuth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-  }
-
-  Future<void> signUp({String email, String password}) async {
-    return await _firebaseAuth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-  }
+  UserRepository({FirebaseAuth firebaseAuth})
+      : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
 
   Future<void> signOut() async {
-    return Future.wait([_firebaseAuth.signOut(), _googleSignIn.signOut()]);
+    return Future.wait([_firebaseAuth.signOut()]);
   }
 
   Future<bool> isSignedIn() async {
@@ -45,6 +17,42 @@ class UserRepository {
   }
 
   Future<String> getUser() async {
-    return (await _firebaseAuth.currentUser()).email;
+    return (await _firebaseAuth.currentUser()).phoneNumber;
+  }
+
+  Future<void> verifyPhoneNumber({
+    @required String phoneNumber,
+    @required Duration timeout,
+    int forceResendingToken,
+    @required PhoneVerificationCompleted verificationCompleted,
+    @required PhoneVerificationFailed verificationFailed,
+    @required PhoneCodeSent codeSent,
+    @required PhoneCodeAutoRetrievalTimeout codeAutoRetrievalTimeout,
+  }) async {
+    return await _firebaseAuth.verifyPhoneNumber(
+      phoneNumber: phoneNumber,
+      timeout: timeout,
+      forceResendingToken: forceResendingToken,
+      verificationCompleted: verificationCompleted,
+      verificationFailed: verificationFailed,
+      codeSent: codeSent,
+      codeAutoRetrievalTimeout: codeAutoRetrievalTimeout,
+    );
+  }
+
+  Future<void> validateOtpAndLogin(
+      String verificationId, String smsCode) async {
+    final AuthCredential _authCredential = PhoneAuthProvider.getCredential(
+        verificationId: verificationId, smsCode: smsCode);
+
+    return await _firebaseAuth
+        .signInWithCredential(_authCredential)
+        .catchError((error) {
+      print('Authentication failed');
+    }).then((AuthResult authResult) {
+      if (authResult != null && authResult.user != null) {
+        print('Authentication successful');
+      }
+    });
   }
 }
