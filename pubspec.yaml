@@ -31,7 +31,6 @@ dependencies:
   rxdart:
   firebase_auth:
   firebase_core:
-  google_sign_in:
   font_awesome_flutter:
   google_nav_bar: ^2.2.0
   line_icons:

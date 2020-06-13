@@ -30,28 +30,30 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   Stream<LoginState> _mapVerifyPhonePressedToState(String phoneNumber) async* {
-    await _userRepository.verifyPhoneNumber(
+    String actualCode;
+    try {
+      await _userRepository.verifyPhoneNumber(
+          phoneNumber: phoneNumber,
+          timeout: const Duration(seconds: 60),
+          verificationCompleted: (AuthCredential auth) async {
+            print('VerifivationCompleted { phoneNumber: $phoneNumber}');
+          },
+          verificationFailed: (AuthException authException) async {
+            print('Error message: ' + authException.message);
+          },
+          codeSent: (String verificationId, [int forceResendingToken]) async {
+            actualCode = verificationId;
+          },
+          codeAutoRetrievalTimeout: (String verificationId) {
+            actualCode = verificationId;
+          });
+      yield LoginValidPhoneNumber(
         phoneNumber: phoneNumber,
-        timeout: const Duration(seconds: 60),
-        verificationCompleted: (AuthCredential auth) async* {
-          print('VerificationCompleted { phoneNumber: $phoneNumber}');
-        },
-        verificationFailed: (AuthException authException) async* {
-          print('Error message: ' + authException.message);
-          yield LoginInvalidPhoneNumber(phoneNumber: phoneNumber);
-        },
-        codeSent: (String verificationId, [int forceResendingToken]) async* {
-          yield LoginValidPhoneNumber(
-            phoneNumber: phoneNumber,
-            verificationId: verificationId,
-          );
-        },
-        codeAutoRetrievalTimeout: (String verificationId) async* {
-          yield LoginValidPhoneNumber(
-            phoneNumber: phoneNumber,
-            verificationId: verificationId,
-          );
-        });
+        verificationId: actualCode,
+      );
+    } catch (_) {
+      yield LoginInvalidPhoneNumber(phoneNumber: phoneNumber);
+    }
   }
 
   Stream<LoginState> _mapValidateOtpPressedToState(String smsCode) async* {
@@ -98,8 +100,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
             phoneNumber: currentState.phoneNumber,
             timeout: const Duration(seconds: 60),
             verificationCompleted: (AuthCredential auth) async {
-              print(
-                  'VerifivationCompleted { phoneNumber: $currentState.phoneNumber}');
+              print('VerifivationCompleted { phoneNumber: $currentState.phoneNumber}');
             },
             verificationFailed: (AuthException authException) async {
               throw new Exception('Error message: ' + authException.message);
