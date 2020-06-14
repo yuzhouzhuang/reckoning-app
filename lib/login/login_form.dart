@@ -1,10 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterApp/blocs/blocs.dart';
 import 'package:flutterApp/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterApp/user_repository.dart';
-import 'package:flutterApp/authentication/bloc/bloc.dart';
-import 'package:flutterApp/login/login.dart';
 
 class LoginForm extends StatefulWidget {
   final UserRepository _userRepository;
@@ -21,22 +20,21 @@ class LoginForm extends StatefulWidget {
 class _LoginFormState extends State<LoginForm> {
   final TextEditingController _phoneNumberController = TextEditingController();
 
-  LoginBloc _loginBloc;
+  AuthBloc _authBloc;
 
-  UserRepository get _userRepository => widget._userRepository;
 
 
   @override
   void initState() {
     super.initState();
-    _loginBloc = BlocProvider.of<LoginBloc>(context);
+    _authBloc = BlocProvider.of<AuthBloc>(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<LoginBloc, LoginState>(
+    return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state is LoginInvalidPhoneNumber) {
+        if (state is AuthStateCodeSent) {
           Scaffold.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
@@ -44,7 +42,7 @@ class _LoginFormState extends State<LoginForm> {
                 content: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    Text('Invalid phone number'),
+                    Text('Code Sent'),
                     Icon(Icons.error),
                   ],
                 ),
@@ -52,7 +50,7 @@ class _LoginFormState extends State<LoginForm> {
               ),
             );
         }
-        if (state is LoginInvalidSMSCode) {
+        if (state is AuthStateAuthenticated) {
           Scaffold.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
@@ -60,24 +58,7 @@ class _LoginFormState extends State<LoginForm> {
                 content: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    Text('Wrong verification code'),
-                    Icon(Icons.error),
-                  ],
-                ),
-                backgroundColor: Colors.red,
-              ),
-            );
-        }
-
-        if (state is LoginValidPhoneNumber) {
-          Scaffold.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text('Valid phone number'),
+                    Text('Authenticated'),
                     Icon(Icons.error),
                   ],
                 ),
@@ -86,11 +67,8 @@ class _LoginFormState extends State<LoginForm> {
             );
         }
 
-        if (state is LoginValidSMSCode) {
-          BlocProvider.of<AuthenticationBloc>(context).add(LoggedIn());
-        }
       },
-      child: BlocBuilder<LoginBloc, LoginState>(builder: (context, state) {
+      child: BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
         return Padding(
           padding: EdgeInsets.all(20.0),
           child: SafeArea(
@@ -166,7 +144,7 @@ class _LoginFormState extends State<LoginForm> {
                               clearButtonMode: OverlayVisibilityMode.editing,
                               keyboardType: TextInputType.phone,
                               maxLines: 1,
-                              placeholder: '+33...',
+                              placeholder: '',
                             ),
                           ),
                           Container(
@@ -177,17 +155,19 @@ class _LoginFormState extends State<LoginForm> {
                             child: RaisedButton(
                               onPressed: () {
                                 if (_phoneNumberController.text.isNotEmpty) {
-                                  _loginBloc.add(VerifyPhonePressed(phoneNumber: _phoneNumberController.text.toString()));
+                                  _authBloc.add(AuthEventSendCode(phoneNumber: _phoneNumberController.text.toString()));
                                 } else {
                                   Scaffold.of(context)
                                     ..hideCurrentSnackBar()
                                     ..showSnackBar(SnackBar(
-                                    behavior: SnackBarBehavior.floating,
-                                    backgroundColor: Colors.red,
-                                    content: Text(
-                                      'Please enter a phone number',
-                                      style: TextStyle(color: Colors.white),
+                                      content: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Text('Please enter phone number'),
+                                        Icon(Icons.error),
+                                      ],
                                     ),
+                                      backgroundColor: Colors.red,
                                   ));
                                 }
                               },
