@@ -1,14 +1,21 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutterApp/models/user.dart';
 import 'package:meta/meta.dart';
 
 class UserRepository {
-  final FirebaseAuth _firebaseAuth;
+
+  static final UserRepository _instance = UserRepository._internal();
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   String _verificationId;
 
-  UserRepository({FirebaseAuth firebaseAuth})
-      : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
+
+  UserRepository._internal();
+
+  factory UserRepository() {
+    return _instance;
+  }
 
   Future<void> signOut() async {
     return Future.wait([_firebaseAuth.signOut()]);

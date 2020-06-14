@@ -6,11 +6,6 @@ import 'package:meta/meta.dart';
 import './bloc.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final UserRepository _userRepository;
-
-  AuthBloc({@required UserRepository userRepository})
-      : assert(userRepository != null),
-        _userRepository = userRepository;
 
   @override
   AuthState get initialState => AuthStateUninitialized();
@@ -34,9 +29,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Stream<AuthState> _mapAppStartToState() async* {
     try {
-      final isAuthenticated = await _userRepository.isAuthenticated();
+      final isAuthenticated = await UserRepository().isAuthenticated();
       if (isAuthenticated) {
-        yield AuthStateAuthenticated(user: await _userRepository.getUser());
+        yield AuthStateAuthenticated(user: await UserRepository().getUser());
       } else {
         yield AuthStateUnauthenticated();
       }
@@ -46,27 +41,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Stream<AuthState> _mapSendCodeToState(AuthEvent event) async* {
-    await _userRepository
+    await UserRepository()
         .verifyPhoneNumber((event as AuthEventSendCode).phoneNumber);
     yield AuthStateCodeSent(
         phoneNumber: (event as AuthEventSendCode).phoneNumber);
   }
 
   Stream<AuthState> _mapResendCodeToState() async* {
-    await _userRepository
+    await UserRepository()
         .verifyPhoneNumber((state as AuthStateCodeSent).phoneNumber);
     yield AuthStateCodeSent(
         phoneNumber: ((state as AuthStateCodeSent).phoneNumber));
   }
 
   Stream<AuthState> _mapValidatePhoneNumberToState(AuthEvent event) async* {
-    User _user = await _userRepository
+    User _user = await UserRepository()
         .validateOtpAndLogin((event as AuthEventValidatePhoneNumber).smsCode);
     yield AuthStateAuthenticated(user: _user);
   }
 
   Stream<AuthState> _mapLogoutToState() async* {
-    await _userRepository.signOut();
+    await UserRepository().signOut();
     yield AuthStateUnauthenticated();
   }
 }
