@@ -2,10 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutterApp/blocs/blocs.dart';
-import 'package:flutterApp/pages/add_event_page.dart';
+import 'package:flutterApp/pages/modals/modals.dart';
 import 'package:flutterApp/theme.dart';
 import 'package:flutterApp/widgets/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 class HomePage extends StatefulWidget {
   static const routeName = '/homePage';
@@ -171,7 +172,13 @@ class _HomePageState extends State<HomePage>
               padding: const EdgeInsets.only(left: 25),
               child: MaterialButton(
                 onPressed: () {
-                  Navigator.of(context).pushNamed(AddEventPage.routeName);
+                  showCupertinoModalBottomSheet(
+                    expand: false,
+                    context: context,
+                    backgroundColor: Colors.transparent,
+                    builder: (context, scrollController) =>
+                        AddEventModal(scrollController: scrollController),
+                  );
                 },
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30)),

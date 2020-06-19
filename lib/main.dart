@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutterApp/pages/home_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterApp/pages/pages.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 import 'blocs/blocs.dart';
 
@@ -18,13 +19,32 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: SplashPage.routeName,
-      routes: {
-        SplashPage.routeName: (context) => SplashPage(),
-        LoginPage.routeName: (context) => LoginPage(),
-        HomePage.routeName: (context) => HomePage(),
-        OtpPage.routeName: (context) => OtpPage(),
-        AddEventPage.routeName: (context) => AddEventPage(),
+      theme: ThemeData(platform: TargetPlatform.iOS),
+//      initialRoute: SplashPage.routeName,
+//      routes: {
+//        SplashPage.routeName: (context) => SplashPage(),
+//        LoginPage.routeName: (context) => LoginPage(),
+//        HomePage.routeName: (context) => HomePage(),
+//        OtpPage.routeName: (context) => OtpPage(),
+//        AddEventModal.routeName: (context) => AddEventModal(),
+//      },
+      onGenerateRoute: (RouteSettings settings) {
+        switch (settings.name) {
+          case LoginPage.routeName:
+            return MaterialWithModalsPageRoute(
+                builder: (_) => LoginPage(), settings: settings);
+          case HomePage.routeName:
+            return MaterialWithModalsPageRoute(
+                builder: (_) => HomePage(), settings: settings);
+          case OtpPage.routeName:
+            return MaterialWithModalsPageRoute(
+                builder: (_) => OtpPage(), settings: settings);
+          case AddEventModal.routeName:
+            return MaterialWithModalsPageRoute(
+                builder: (_) => AddEventModal(), settings: settings);
+        }
+        return MaterialWithModalsPageRoute(
+            builder: (_) => SplashPage(), settings: settings);
       },
       home: App(),
     );
