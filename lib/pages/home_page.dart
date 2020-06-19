@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutterApp/blocs/blocs.dart';
 import 'package:flutterApp/pages/modals/modals.dart';
 import 'package:flutterApp/theme.dart';
@@ -28,7 +29,7 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    scrollController = ScrollController(initialScrollOffset: 100);
+    scrollController = ScrollController(initialScrollOffset: 0);
     tabController = TabController(
       length: myTabs.length,
       vsync: this,
@@ -37,6 +38,9 @@ class _HomePageState extends State<HomePage>
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(statusBarBrightness: Brightness.light) // Or Brightness.dark
+    );
     return BlocBuilder<AuthBloc, AuthState>(
         builder: (BuildContext context, state) {
       return Scaffold(
@@ -71,7 +75,7 @@ class _HomePageState extends State<HomePage>
                         indicatorColor: MyColors.primaryColor,
                       ),
                       SizedBox(
-                        height: MediaQuery.of(context).size.height - 150,
+                        height: MediaQuery.of(context).size.height - 180,
                         child: TabBarView(
                           physics: NeverScrollableScrollPhysics(),
                           children: <Widget>[

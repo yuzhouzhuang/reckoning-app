@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutterApp/pages/home_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterApp/pages/pages.dart';
@@ -9,6 +10,9 @@ import 'blocs/blocs.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   BlocSupervisor.delegate = SimpleBlocDelegate();
+  SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(statusBarBrightness: Brightness.light) // Or Brightness.dark
+  );
   runApp(BlocProvider(
     create: (context) => AuthBloc()..add(AuthEventAppStart()),
     child: MyApp(),
