@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
         LoginPage.routeName: (context) => LoginPage(),
         HomePage.routeName: (context) => HomePage(),
         OtpPage.routeName: (context) => OtpPage(),
+        AddEventPage.routeName: (context) => AddEventPage(),
       },
       home: App(),
     );

@@ -144,7 +144,7 @@ class _CustomAppBarState extends State<CustomAppBar>
                                   borderRadius: const BorderRadius.all(Radius.circular(20)),
                                   color: Colors.white,
                                 ),
-                                child: Icon(Icons.person_outline, color: MyColors.primaryColorLight.withOpacity(1), size:  26 - 3 + 3 * topBarOpacity,),
+                                child: Icon(Icons.person_outline, color: MyColors.primaryColorLight.withOpacity(1), size:  26 - 6 + 6 * topBarOpacity,),
                               ),
                               onPressed: () => Navigator.of(context).pop(),
                             ),

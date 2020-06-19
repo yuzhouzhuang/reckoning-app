@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutterApp/blocs/blocs.dart';
+import 'package:flutterApp/pages/add_event_page.dart';
 import 'package:flutterApp/theme.dart';
 import 'package:flutterApp/widgets/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -169,7 +170,9 @@ class _HomePageState extends State<HomePage>
             child: Padding(
               padding: const EdgeInsets.only(left: 25),
               child: MaterialButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).pushNamed(AddEventPage.routeName);
+                },
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30)),
                 height: 40,
