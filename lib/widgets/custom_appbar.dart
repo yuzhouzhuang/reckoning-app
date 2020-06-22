@@ -1,6 +1,9 @@
 library fluent_appbar;
 
 import 'package:flutter/material.dart';
+import 'package:flutterApp/blocs/auth/auth_bloc.dart';
+import 'package:flutterApp/blocs/auth/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../theme.dart';
 
@@ -83,82 +86,93 @@ class _CustomAppBarState extends State<CustomAppBar>
   }
 
   Widget getAppBarUI(context) {
-    return Column(
-      children: <Widget>[
-        AnimatedBuilder(
-          animation: animationController,
-          builder: (BuildContext context, Widget child) {
-            return FadeTransition(
-              opacity: topBarAnimation,
-              child: Transform(
-                transform: Matrix4.translationValues(
-                    0.0, 30 * (1.0 - topBarAnimation.value), 0.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: widget.appBarColor.withOpacity(topBarOpacity),
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(0.0),
-                      bottomRight: Radius.circular(0.0),
-                    ),
-                    boxShadow: <BoxShadow>[
-                      BoxShadow(
-                          color: widget.boxShadowColor
-                              .withOpacity(0.4 * topBarOpacity),
-                          offset: const Offset(1.1, 1.1),
-                          blurRadius: 10.0),
-                    ],
-                  ),
-                  child: Column(
-                    children: <Widget>[
-                      SizedBox(
-                        height: MediaQuery.of(context).padding.top,
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(
-                            left: 16,
-                            right: 16,
-                            top: 16 - 8.0 * topBarOpacity,
-                            bottom: 12 - 8.0 * topBarOpacity),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  widget.titleText,
-                                  textAlign: TextAlign.left,
-                                  style: TextStyle(
-                                      fontWeight: widget.titleFontWeight,
-                                      fontSize: 25 + 6 - 6 * topBarOpacity,
-                                      color: widget.titleColor),
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              icon: Container(
-                                width: 25 + 6 - 6 * topBarOpacity,
-                                height: 25 + 6 - 6 * topBarOpacity,
-//                                  padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  borderRadius: const BorderRadius.all(Radius.circular(20)),
-                                  color: Colors.white,
-                                ),
-                                child: Icon(Icons.person_outline, color: MyColors.primaryColorLight.withOpacity(1), size:  26 - 6 + 6 * topBarOpacity,),
-                              ),
-                              onPressed: () => Navigator.of(context).pop(),
-                            ),
-                          ],
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (BuildContext context, AuthState state) {
+        return Column(
+          children: <Widget>[
+            AnimatedBuilder(
+              animation: animationController,
+              builder: (BuildContext context, Widget child) {
+                return FadeTransition(
+                  opacity: topBarAnimation,
+                  child: Transform(
+                    transform: Matrix4.translationValues(
+                        0.0, 30 * (1.0 - topBarAnimation.value), 0.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: widget.appBarColor.withOpacity(topBarOpacity),
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(0.0),
+                          bottomRight: Radius.circular(0.0),
                         ),
-                      )
-                    ],
+                        boxShadow: <BoxShadow>[
+                          BoxShadow(
+                              color: widget.boxShadowColor
+                                  .withOpacity(0.4 * topBarOpacity),
+                              offset: const Offset(1.1, 1.1),
+                              blurRadius: 10.0),
+                        ],
+                      ),
+                      child: Column(
+                        children: <Widget>[
+                          SizedBox(
+                            height: MediaQuery
+                                .of(context)
+                                .padding
+                                .top,
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(
+                                left: 16,
+                                right: 16,
+                                top: 16 - 8.0 * topBarOpacity,
+                                bottom: 12 - 8.0 * topBarOpacity),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: <Widget>[
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      widget.titleText,
+                                      textAlign: TextAlign.left,
+                                      style: TextStyle(
+                                          fontWeight: widget.titleFontWeight,
+                                          fontSize: 25 + 6 - 6 * topBarOpacity,
+                                          color: widget.titleColor),
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: Container(
+                                    width: 25 + 6 - 6 * topBarOpacity,
+                                    height: 25 + 6 - 6 * topBarOpacity,
+//                                  padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(20)),
+                                      color: Colors.white,
+                                    ),
+                                    child: Icon(Icons.person_outline,
+                                      color: MyColors.primaryColorLight
+                                          .withOpacity(1),
+                                      size: 26 - 6 + 6 * topBarOpacity,),
+                                  ),
+                                  onPressed: () => BlocProvider.of<AuthBloc>(context).add(AuthEventLogout()),
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            );
-          },
-        )
-      ],
+                );
+              },
+            )
+          ],
+        );
+      }
     );
   }
 }

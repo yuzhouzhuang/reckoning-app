@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterApp/pages/home_page.dart';
+import 'package:flutterApp/user_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterApp/pages/pages.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(platform: TargetPlatform.iOS),
-//      initialRoute: SplashPage.routeName,
+      initialRoute: SplashPage.routeName,
 //      routes: {
 //        SplashPage.routeName: (context) => SplashPage(),
 //        LoginPage.routeName: (context) => LoginPage(),

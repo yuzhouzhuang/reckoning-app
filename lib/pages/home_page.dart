@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutterApp/Animation/FadeAnimation.dart';
 import 'package:flutterApp/blocs/blocs.dart';
 import 'package:flutterApp/pages/modals/modals.dart';
 import 'package:flutterApp/theme.dart';
@@ -36,6 +37,64 @@ class _HomePageState extends State<HomePage>
     );
   }
 
+
+  Widget makeItem({image, date}) {
+    return Row(
+      children: <Widget>[
+        Container(
+          width: 50,
+          height: 200,
+          margin: EdgeInsets.only(right: 20),
+          child: Column(
+            children: <Widget>[
+              Text(date.toString(), style: TextStyle(color: MyColors.primaryColorLight, fontSize: 25, fontWeight: FontWeight.bold),),
+              Text("SEP", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),)
+            ],
+          ),
+        ),
+        Expanded(
+          child: Container(
+            height: 200,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                image: DecorationImage(
+                    image: AssetImage(image),
+                    fit: BoxFit.cover
+                )
+            ),
+            child: Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                      colors: [
+                        Colors.black.withOpacity(.4),
+                        Colors.black.withOpacity(.1),
+                      ]
+                  )
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  Text("Bumbershoot 2019", style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold),),
+                  SizedBox(height: 10,),
+                  Row(
+                    children: <Widget>[
+                      Icon(Icons.access_time, color: Colors.white,),
+                      SizedBox(width: 10,),
+                      Text("19:00 PM", style: TextStyle(color: Colors.white),)
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(
@@ -55,82 +114,26 @@ class _HomePageState extends State<HomePage>
                   height: 100,
                 ),
                 searchBox(),
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(30),
-                          topRight: Radius.circular(30)),
-                      color: Colors.white),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      SizedBox(
-                        height: 10,
-                      ),
-                      TabBar(
-                        tabs: myTabs,
-                        controller: tabController,
-                        labelColor: Colors.grey[700],
-                        indicatorColor: MyColors.primaryColor,
-                      ),
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height - 180,
-                        child: TabBarView(
-                          physics: NeverScrollableScrollPhysics(),
-                          children: <Widget>[
-                            ListView(
-                              shrinkWrap: true,
-                              children: <Widget>[
-                                Container(
-                                  color: Colors.red,
-                                  height: 20,
-                                ),
-                              ],
-                            ),
-                            ListView(
-                              shrinkWrap: true,
-                              children: <Widget>[
-                                Container(
-                                  color: Colors.red,
-                                  height: 20,
-                                ),
-                                Container(
-                                  color: Colors.red,
-                                  height: 20,
-                                ),
-                              ],
-                            ),
-                            ListView(
-                              shrinkWrap: true,
-                              children: <Widget>[
-                                Container(
-                                  color: Colors.red,
-                                  height: 20,
-                                ),
-                                Container(
-                                  color: Colors.red,
-                                  height: 20,
-                                ),
-                                Container(
-                                  color: Colors.red,
-                                  height: 20,
-                                ),
-                              ],
-                            ),
-                          ],
-                          controller: tabController,
-                        ),
-                      ),
-//                    makePost(Sample.postOne),
-//                    makePost(Sample.postTwo),
+                      FadeAnimation(1.2, makeItem(image: 'assets/images/one.jpg', date: 17)),
+                      SizedBox(height: 20,),
+                      FadeAnimation(1.3, makeItem(image: 'assets/images/two.jpg', date: 18)),
+                      SizedBox(height: 20,),
+                      FadeAnimation(1.4, makeItem(image: 'assets/images/three.jpg', date: 19)),
+                      SizedBox(height: 20,),
+                      FadeAnimation(1.5, makeItem(image: 'assets/images/four.jpg', date: 20)),
+                      SizedBox(height: 20,),
                     ],
                   ),
-                )
+                ),
               ],
             ),
           ),
-          CustomAppBar(scrollController: scrollController, titleText: 'Events'),
+          CustomAppBar(scrollController: scrollController, titleText: 'Home'),
         ]),
       );
     });
@@ -143,7 +146,7 @@ class _HomePageState extends State<HomePage>
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
           Expanded(
-            flex: 4,
+            flex: 5,
             child: Container(
               height: 40,
               decoration: BoxDecoration(
@@ -190,12 +193,20 @@ class _HomePageState extends State<HomePage>
                 minWidth: 50,
                 elevation: 0,
                 color: MyColors.primaryColor,
-                child: Text(
-                  'Add event',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold),
+                child: Row(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: Icon(Icons.camera_alt, color: Colors.white,),
+                    ),
+                    Text(
+                      'Add',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
               ),
             ),

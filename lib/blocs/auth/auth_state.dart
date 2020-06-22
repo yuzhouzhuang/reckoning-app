@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutterApp/models/models.dart';
+import 'package:flutterApp/user_repository.dart';
 import 'package:meta/meta.dart';
 
 abstract class AuthState extends Equatable {
