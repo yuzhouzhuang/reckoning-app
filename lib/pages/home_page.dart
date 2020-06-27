@@ -1,13 +1,17 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterApp/Animation/FadeAnimation.dart';
+import 'package:flutterApp/arguments/event_page_argument.dart';
 import 'package:flutterApp/blocs/blocs.dart';
+import 'package:flutterApp/pages/event_page.dart';
 import 'package:flutterApp/pages/modals/modals.dart';
 import 'package:flutterApp/theme.dart';
 import 'package:flutterApp/widgets/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 class HomePage extends StatefulWidget {
@@ -26,6 +30,7 @@ class _HomePageState extends State<HomePage>
 
   ScrollController scrollController;
   TabController tabController;
+  final picker = ImagePicker();
 
   @override
   void initState() {
@@ -103,7 +108,7 @@ class _HomePageState extends State<HomePage>
     return BlocBuilder<AuthBloc, AuthState>(
         builder: (BuildContext context, state) {
       return Scaffold(
-        backgroundColor: Color.fromRGBO(238, 238, 238, 1),
+        backgroundColor: Colors.white,
         body: Stack(children: <Widget>[
           SingleChildScrollView(
             scrollDirection: Axis.vertical,
@@ -150,7 +155,7 @@ class _HomePageState extends State<HomePage>
             child: Container(
               height: 40,
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50), color: Colors.white),
+                  borderRadius: BorderRadius.all(Radius.circular(14)), color: Color.fromRGBO(238, 238, 238, 1)),
               child: Row(
                 children: <Widget>[
                   Padding(
@@ -178,17 +183,19 @@ class _HomePageState extends State<HomePage>
             child: Padding(
               padding: const EdgeInsets.only(left: 25),
               child: MaterialButton(
-                onPressed: () {
-                  showCupertinoModalBottomSheet(
-                    expand: false,
-                    context: context,
-                    backgroundColor: Colors.transparent,
-                    builder: (context, scrollController) =>
-                        AddEventModal(scrollController: scrollController),
-                  );
+                onPressed: () async {
+                  final pickedFile = await picker.getImage(source: ImageSource.camera);
+                  Navigator.of(context).pushNamed(EventPage.routeName, arguments: EventPageArgument(image: File(pickedFile.path)));
+//                  showCupertinoModalBottomSheet(
+//                    expand: false,
+//                    context: context,
+//                    backgroundColor: Colors.transparent,
+//                    builder: (context, scrollController) =>
+//                        AddEventModal(scrollController: scrollController),
+//                  );
                 },
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30)),
+                    borderRadius: BorderRadius.all(Radius.circular(14))),
                 height: 40,
                 minWidth: 50,
                 elevation: 0,
@@ -203,8 +210,7 @@ class _HomePageState extends State<HomePage>
                       'Add',
                       style: TextStyle(
                           color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold),
+                          ),
                     ),
                   ],
                 ),

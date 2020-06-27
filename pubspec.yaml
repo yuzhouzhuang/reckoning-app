@@ -39,6 +39,7 @@ dependencies:
   modal_bottom_sheet: ^0.1.6+1
   flutter_form_builder: ^3.11.2
   simple_animations:
+  image_picker:
 
 
 dev_dependencies:

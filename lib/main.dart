@@ -11,9 +11,9 @@ import 'blocs/blocs.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   BlocSupervisor.delegate = SimpleBlocDelegate();
-  SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(statusBarBrightness: Brightness.light) // Or Brightness.dark
-  );
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+          statusBarBrightness: Brightness.light) // Or Brightness.dark
+      );
   runApp(BlocProvider(
     create: (context) => AuthBloc()..add(AuthEventAppStart()),
     child: MyApp(),
@@ -47,6 +47,9 @@ class MyApp extends StatelessWidget {
           case AddEventModal.routeName:
             return MaterialWithModalsPageRoute(
                 builder: (_) => AddEventModal(), settings: settings);
+          case EventPage.routeName:
+            return MaterialWithModalsPageRoute(
+                builder: (_) => EventPage(), settings: settings);
         }
         return MaterialWithModalsPageRoute(
             builder: (_) => SplashPage(), settings: settings);

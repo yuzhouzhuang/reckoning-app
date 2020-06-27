@@ -151,12 +151,11 @@ class _CustomAppBarState extends State<CustomAppBar>
                                     decoration: BoxDecoration(
                                       borderRadius: const BorderRadius.all(
                                           Radius.circular(20)),
-                                      color: Colors.white,
                                     ),
                                     child: Icon(Icons.person_outline,
                                       color: MyColors.primaryColorLight
                                           .withOpacity(1),
-                                      size: 26 - 6 + 6 * topBarOpacity,),
+                                      size: 24 + 8 - 8 * topBarOpacity,),
                                   ),
                                   onPressed: () => BlocProvider.of<AuthBloc>(context).add(AuthEventLogout()),
                                 ),
