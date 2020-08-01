@@ -184,7 +184,7 @@ class _HomePageState extends State<HomePage>
               padding: const EdgeInsets.only(left: 25),
               child: MaterialButton(
                 onPressed: () async {
-                  final pickedFile = await picker.getImage(source: ImageSource.camera);
+                  final pickedFile = await picker.getImage(source: ImageSource.gallery);
                   Navigator.of(context).pushNamed(EventPage.routeName, arguments: EventPageArgument(image: File(pickedFile.path)));
 //                  showCupertinoModalBottomSheet(
 //                    expand: false,

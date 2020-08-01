@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutterApp/models/models.dart';
 import 'package:flutterApp/user_repository.dart';
 import 'package:meta/meta.dart';
 import './bloc.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-
   @override
   AuthState get initialState => AuthStateUninitialized();
 
