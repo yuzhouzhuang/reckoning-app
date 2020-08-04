@@ -5,10 +5,11 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'entities/entities.dart';
+import '../entities/entities.dart';
 
-class FirebaseUserInfoRepository{
-  final userCollection = Firestore.instance.collection('Users');
+class FirebaseUserInfoRepository {
+  final CollectionReference userCollection =
+      Firestore.instance.collection('Users');
 
   Future<void> addNewUserEntity(UserEntity userEntity) {
     return userCollection.add(userEntity.toDocument());
@@ -18,11 +19,9 @@ class FirebaseUserInfoRepository{
     return userCollection.document(userEntity.uid).delete();
   }
 
-  Stream<List<UserEntity>> getUserEntities() {
-    return userCollection.snapshots().map((snapshot) {
-      return snapshot.documents
-          .map((doc) => UserEntity.fromSnapshot(doc))
-          .toList();
+  Future<UserEntity> getUserEntity(String uid) {
+    return userCollection.document(uid).get().then((snapshot) {
+      return UserEntity.fromSnapshot(snapshot);
     });
   }
 

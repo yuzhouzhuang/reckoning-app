@@ -5,31 +5,31 @@ import 'package:flutterApp/entities/user_event_entity.dart';
 class UserEntity extends Equatable {
   final String uid;
   final String userName;
-  final List<UserEventEntity> userEvents;
+  final String phone;
 
-  const UserEntity(this.uid, this.userName, this.userEvents);
+  const UserEntity(this.uid, this.userName, this.phone);
 
   Map<String, Object> toJson() {
     return {
       "uid": uid,
       "userName": userName,
-      "userEvents": userEvents.map((element) => element.toJson()).toList(),
+      "phone": phone,
     };
   }
 
   @override
-  List<Object> get props => [uid, userName, userEvents];
+  List<Object> get props => [uid, userName, phone];
 
   @override
   String toString() {
-    return 'UserEntity { uid: $uid, userName: $userName, userEvents: ${userEvents.map((element) => element.toJson()).toList()}';
+    return 'UserEntity { uid: $uid, userName: $userName, phone: $phone }';
   }
 
   static UserEntity fromJson(Map<String, Object> json) {
     return UserEntity(
       json["uid"] as String,
       json["userName"] as String,
-      json["userEvents"] as List<UserEventEntity>,
+      json["phone"] as String,
     );
   }
 
@@ -38,14 +38,15 @@ class UserEntity extends Equatable {
     return UserEntity(
       snap.documentID,
       snap.data['userName'],
-      null,
+      snap.data['phone']
     );
   }
+
 
   Map<String, Object> toDocument() {
     return {
       "userName": userName,
-      "userEvents": userEvents.map((element) => element.toJson()).toList(),
+      "phone": phone,
     };
   }
 }
