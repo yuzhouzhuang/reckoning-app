@@ -10,6 +10,7 @@ import 'package:flutterApp/blocs/blocs.dart';
 import 'package:flutterApp/logics/logics.dart';
 import 'package:flutterApp/pages/event_page.dart';
 import 'package:flutterApp/pages/modals/modals.dart';
+import 'package:flutterApp/respositories/respositories.dart';
 import 'package:flutterApp/theme.dart';
 import 'package:flutterApp/utils/eventUtil.dart';
 import 'package:flutterApp/widgets/widgets.dart';
@@ -35,10 +36,12 @@ class _HomePageState extends State<HomePage>
   TabController tabController;
   final picker = ImagePicker();
   UserEventLogic userEventLogic;
+  FirebaseUserInfoRepository userInfoRepository;
 
   @override
   void initState() {
     super.initState();
+    userInfoRepository = FirebaseUserInfoRepository();
     userEventLogic = UserEventLogic();
     scrollController = ScrollController(initialScrollOffset: 0);
     tabController = TabController(
@@ -150,6 +153,177 @@ class _HomePageState extends State<HomePage>
         builder: (BuildContext context, state) {
       return Scaffold(
         backgroundColor: Colors.white,
+        endDrawer: Container(
+          width: MediaQuery.of(context).size.width * 0.618,
+          height: MediaQuery.of(context).size.height,
+          color: Colors.white,
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                flex: 1,
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.618,
+                  color: MyColors.primaryColor,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: DrawerHeader(
+                      child: Row(
+                        children: <Widget>[
+                          Icon(
+                            Icons.settings,
+                            size: 25,
+                            color: Colors.white,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text("Settings",
+                              style: TextStyle(
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white)),
+//                          SizedBox(width: 15,),
+//                          FutureBuilder<DocumentSnapshot>(
+//                            future: Firestore.instance
+//                                .collection('Users')
+//                                .document((BlocProvider.of<AuthBloc>(context)
+//                                        .state as AuthStateAuthenticated)
+//                                    .user
+//                                    .userId)
+//                                .get(),
+//                            builder: (BuildContext context,
+//                                AsyncSnapshot<DocumentSnapshot> snapshot) {
+//                              if (snapshot.hasError) {
+//                                return Text("Something went wrong");
+//                              }
+//
+//                              if (snapshot.connectionState ==
+//                                  ConnectionState.done) {
+//                                return Text(snapshot.data['userName'],
+//                                    style: TextStyle(
+//                                        fontSize: 25,
+//                                        fontWeight: FontWeight.bold,
+//                                        color: Colors.white));
+//                              }
+//
+//                              return Text("loading");
+//                            },
+//                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 5,
+                child: Column(
+                  children: <Widget>[
+                    SizedBox(
+                      height: 40,
+                    ),
+                    ListTile(
+                      title: Text(
+                        'Update Username:',
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    FutureBuilder<DocumentSnapshot>(
+                      future: Firestore.instance
+                          .collection('Users')
+                          .document((BlocProvider.of<AuthBloc>(context).state
+                                  as AuthStateAuthenticated)
+                              .user
+                              .userId)
+                          .get(),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<DocumentSnapshot> snapshot) {
+                        if (snapshot.hasError) {
+                          return ListTile(
+                            title: Container(
+                              decoration: BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(4)),
+                                  color: Colors.grey.withOpacity(0.5)),
+                              child: TextFormField(
+                                initialValue: "Something went wrong",
+                              ),
+                            ),
+                          );
+                        }
+
+//                        if (snapshot.connectionState == ConnectionState.done) {
+//                          return ListTile(
+//                            title: Container(
+//                              decoration: BoxDecoration(
+//                                  borderRadius:
+//                                      BorderRadius.all(Radius.circular(4)),
+//                                  color: Colors.grey.withOpacity(0.5)),
+//                              child: TextFormField(
+//                                initialValue: snapshot.data['userName'],
+//                              ),
+//                            ),
+//                          );
+//                        }
+
+//                        return Text("?");
+                        return ListTile(
+                          title: Container(
+                            decoration: BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(4)),
+                                color: Colors.white),
+                            child: TextFormField(
+                              onChanged: (text) {
+                                Firestore.instance
+                                    .collection('Users')
+                                    .document(
+                                        (BlocProvider.of<AuthBloc>(context)
+                                                    .state
+                                                as AuthStateAuthenticated)
+                                            .user
+                                            .userId)
+                                    .updateData({'userName': text}).then((value) => print("User Updated"))
+                                    .catchError((error) => print("Failed to update user: $error"));
+                              },
+                              initialValue: snapshot.data['userName'],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    SizedBox(
+                      height: 40,
+                    ),
+                    ListTile(
+                      title: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: RaisedButton(
+                          onPressed: () {
+                            BlocProvider.of<AuthBloc>(context)
+                                .add(AuthEventLogout());
+                            //BlocProvider.of<AuthBloc>(context).add(AuthEventValidatePhoneNumber(smsCode: _pinPutController.text));
+                          },
+                          color: MyColors.primaryColor,
+                          shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(
+                            Radius.circular(14),
+                          )),
+                          child: Center(
+                              child: Text(
+                            'Log out',
+                            style: TextStyle(fontSize: 15, color: Colors.white),
+                          )),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
         body: Stack(children: <Widget>[
           SingleChildScrollView(
             scrollDirection: Axis.vertical,
@@ -196,14 +370,6 @@ class _HomePageState extends State<HomePage>
                                   height: 20,
                                 ),
                               ]);
-                              new ListTile(
-                                title: new Text(
-                                    (document['eventDate'] as Timestamp)
-                                        .toDate()
-                                        .toString()),
-                                subtitle: new Text(
-                                    document['paymentAmount'].toString()),
-                              );
                             }).toList(),
                           );
                       }

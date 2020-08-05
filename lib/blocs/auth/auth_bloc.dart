@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutterApp/entities/entities.dart';
 import 'package:flutterApp/models/models.dart';
+import 'package:flutterApp/respositories/respositories.dart';
 import 'package:flutterApp/user_repository.dart';
 import 'package:meta/meta.dart';
 import './bloc.dart';
@@ -57,6 +59,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Stream<AuthState> _mapValidatePhoneNumberToState(AuthEvent event) async* {
     User _user = await UserRepository()
         .validateOtpAndLogin((event as AuthEventValidatePhoneNumber).smsCode);
+    FirebaseUserInfoRepository userInfoRepository = FirebaseUserInfoRepository();
+    if (!(await userInfoRepository.hasUser(_user.userId))) {
+      userInfoRepository.addNewUserEntity(
+          UserEntity(_user.userId, "default", _user.phoneNumber));
+    }
+
     yield AuthStateAuthenticated(user: _user);
   }
 

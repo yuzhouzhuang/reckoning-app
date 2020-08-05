@@ -12,11 +12,18 @@ class FirebaseUserInfoRepository {
       Firestore.instance.collection('Users');
 
   Future<void> addNewUserEntity(UserEntity userEntity) {
-    return userCollection.add(userEntity.toDocument());
+    return userCollection.document(userEntity.uid).setData(userEntity.toDocument());
   }
 
   Future<void> deleteUserEntity(UserEntity userEntity) async {
     return userCollection.document(userEntity.uid).delete();
+  }
+
+  Future<bool> hasUser(String uid) async {
+    List<String> list = await userCollection.getDocuments().then((snapshot) => snapshot.documents
+        .map((result) => result.documentID)
+        .toList());
+    return list.contains(uid);
   }
 
   Future<UserEntity> getUserEntity(String uid) {

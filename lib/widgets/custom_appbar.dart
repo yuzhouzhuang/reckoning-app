@@ -157,7 +157,7 @@ class _CustomAppBarState extends State<CustomAppBar>
                                           .withOpacity(1),
                                       size: 24 + 8 - 8 * topBarOpacity,),
                                   ),
-                                  onPressed: () => BlocProvider.of<AuthBloc>(context).add(AuthEventLogout()),
+                                  onPressed: () =>  Scaffold.of(context).openEndDrawer(),
                                 ),
                               ],
                             ),
