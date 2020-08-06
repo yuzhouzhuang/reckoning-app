@@ -3,7 +3,8 @@ import 'dart:io';
 import 'package:meta/meta.dart';
 
 class EventPageArgument {
-  final File image;
+  final String eventId;
+  final String userId;
 
-  EventPageArgument({@required this.image});
+  EventPageArgument({@required this.eventId, @required this.userId});
 }

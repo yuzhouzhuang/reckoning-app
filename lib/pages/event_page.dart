@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutterApp/arguments/event_page_argument.dart';
@@ -14,60 +15,11 @@ class EventPage extends StatefulWidget {
 }
 
 class _EventPageState extends State<EventPage> {
-  File image;
 
-
-//  @override
-//  initState() {
-//    super.initState();
-//    asyncInitState().then((result) {
-//      print("result: $result");
-//      setState(() {});
-//    });
-//  }
-
-  void asyncOCR() async {
-    final FirebaseVisionImage visionImage = FirebaseVisionImage.fromFile(image);
-    final TextRecognizer textRecognizer =
-        FirebaseVision.instance.textRecognizer();
-    final VisionText visionText =
-        await textRecognizer.processImage(visionImage);
-    String text = visionText.text;
-//    print(text);
-    for (TextBlock block in visionText.blocks) {
-      print('***');
-      final Rect boundingBox = block.boundingBox;
-      final List<Offset> cornerPoints = block.cornerPoints;
-      final String text = block.text;
-      final List<RecognizedLanguage> languages = block.recognizedLanguages;
-
-//      print(text);
-      for (TextLine line in block.lines) {
-        // Same getters as TextBlock
-        print('******');
-        final Rect boundingBox = line.boundingBox;
-        final List<Offset> cornerPoints = line.cornerPoints;
-        final String text = line.text;
-        final List<RecognizedLanguage> languages = line.recognizedLanguages;
-        print(text);
-        for (TextElement element in line.elements) {
-          // Same getters as TextBlock
-//          print('*********');
-//          final Rect boundingBox = element.boundingBox;
-//          final List<Offset> cornerPoints = element.cornerPoints;
-//          final String text = element.text;
-//          final List<RecognizedLanguage> languages = element.recognizedLanguages;
-//          print(text);
-        }
-      }
-    }
-    textRecognizer.close();
-  }
 
   @override
   Widget build(BuildContext context) {
     final EventPageArgument args = ModalRoute.of(context).settings.arguments;
-    image = args.image;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -100,32 +52,36 @@ class _EventPageState extends State<EventPage> {
         child: SingleChildScrollView(
           child: Column(
             children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Center(
-                  child: image == null
-                      ? Text('No image selected.')
-                      : Image.file(
-                          image,
-                          height: 400,
-                        ),
-                ),
+              StreamBuilder<QuerySnapshot>(
+                stream: Firestore.instance
+                    .collection('Events')
+                    .document(args.eventId)
+                    .collection('Menu')
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.hasError)
+                    return new Text('Error: ${snapshot.error}');
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting:
+                      return new Text('Loading...');
+                    default:
+                      return new Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: snapshot.data.documents
+                            .map((DocumentSnapshot document) {
+                          return SelectChip(eventId: args.eventId, itemId: document.documentID, userId: args.userId,);
+                        }).toList(),
+                      );
+                  }
+                },
               ),
-              SelectChip(),
-              SelectChip(),
-              SelectChip(),
-              SelectChip(),
-              SelectChip(),
-              SelectChip(),
-              SelectChip(),
-              SelectChip(),
-              SelectChip(),
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 constraints: const BoxConstraints(maxWidth: 500),
                 child: RaisedButton(
                   onPressed: () {
-                    asyncOCR();
+//                    asyncOCR();
 //                BlocProvider.of<AuthBloc>(context).add(AuthEventValidatePhoneNumber(smsCode: _pinPutController.text));
                   },
                   color: MyColors.primaryColor,

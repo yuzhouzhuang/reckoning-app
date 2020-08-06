@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterApp/Animation/FadeAnimation.dart';
@@ -17,6 +18,8 @@ import 'package:flutterApp/widgets/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+
+import 'pages.dart';
 
 class HomePage extends StatefulWidget {
   static const routeName = '/homePage';
@@ -37,10 +40,12 @@ class _HomePageState extends State<HomePage>
   final picker = ImagePicker();
   UserEventLogic userEventLogic;
   FirebaseUserInfoRepository userInfoRepository;
+  String _eventName;
 
   @override
   void initState() {
     super.initState();
+    _eventName = 'New Event';
     userInfoRepository = FirebaseUserInfoRepository();
     userEventLogic = UserEventLogic();
     scrollController = ScrollController(initialScrollOffset: 0);
@@ -182,33 +187,6 @@ class _HomePageState extends State<HomePage>
                                   fontSize: 25,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white)),
-//                          SizedBox(width: 15,),
-//                          FutureBuilder<DocumentSnapshot>(
-//                            future: Firestore.instance
-//                                .collection('Users')
-//                                .document((BlocProvider.of<AuthBloc>(context)
-//                                        .state as AuthStateAuthenticated)
-//                                    .user
-//                                    .userId)
-//                                .get(),
-//                            builder: (BuildContext context,
-//                                AsyncSnapshot<DocumentSnapshot> snapshot) {
-//                              if (snapshot.hasError) {
-//                                return Text("Something went wrong");
-//                              }
-//
-//                              if (snapshot.connectionState ==
-//                                  ConnectionState.done) {
-//                                return Text(snapshot.data['userName'],
-//                                    style: TextStyle(
-//                                        fontSize: 25,
-//                                        fontWeight: FontWeight.bold,
-//                                        color: Colors.white));
-//                              }
-//
-//                              return Text("loading");
-//                            },
-//                          ),
                         ],
                       ),
                     ),
@@ -253,21 +231,6 @@ class _HomePageState extends State<HomePage>
                           );
                         }
 
-//                        if (snapshot.connectionState == ConnectionState.done) {
-//                          return ListTile(
-//                            title: Container(
-//                              decoration: BoxDecoration(
-//                                  borderRadius:
-//                                      BorderRadius.all(Radius.circular(4)),
-//                                  color: Colors.grey.withOpacity(0.5)),
-//                              child: TextFormField(
-//                                initialValue: snapshot.data['userName'],
-//                              ),
-//                            ),
-//                          );
-//                        }
-
-//                        return Text("?");
                         return ListTile(
                           title: Container(
                             decoration: BoxDecoration(
@@ -284,8 +247,10 @@ class _HomePageState extends State<HomePage>
                                                 as AuthStateAuthenticated)
                                             .user
                                             .userId)
-                                    .updateData({'userName': text}).then((value) => print("User Updated"))
-                                    .catchError((error) => print("Failed to update user: $error"));
+                                    .updateData({'userName': text})
+                                    .then((value) => print("User Updated"))
+                                    .catchError((error) =>
+                                        print("Failed to update user: $error"));
                               },
                               initialValue: snapshot.data['userName'],
                             ),
@@ -333,9 +298,85 @@ class _HomePageState extends State<HomePage>
                 SizedBox(
                   height: 100,
                 ),
-                searchBox(),
                 Padding(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: EdgeInsets.symmetric(horizontal: 17, vertical: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: <Widget>[
+                      Expanded(
+                        flex: 5,
+                        child: Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(14)),
+                              color: Color.fromRGBO(238, 238, 238, 1)),
+                          child: Row(
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 15, right: 5, top: 2),
+                                child: Icon(
+                                  Icons.add,
+                                  size: 18,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              Expanded(
+                                child: TextField(
+                                  onChanged: (text) => _eventName = text,
+                                  decoration: InputDecoration(
+                                      hintText: "New Event",
+                                      hintStyle: TextStyle(color: Colors.grey),
+                                      border: InputBorder.none),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 25),
+                          child: MaterialButton(
+                            onPressed: () async {
+                              final pickedFile = await picker.getImage(
+                                  source: ImageSource.gallery);
+                              asyncOCR(image: File(pickedFile.path), userId: (BlocProvider.of<AuthBloc>(context).state as AuthStateAuthenticated).user.userId);
+                            },
+                            shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(14))),
+                            height: 40,
+                            minWidth: 50,
+                            elevation: 0,
+                            color: MyColors.primaryColor,
+                            child: Row(
+                              children: <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 10),
+                                  child: Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                Text(
+                                  'Add',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(4.0),
                   child: StreamBuilder<QuerySnapshot>(
                     stream: Firestore.instance
                         .collection('Users')
@@ -343,7 +384,7 @@ class _HomePageState extends State<HomePage>
                                 as AuthStateAuthenticated)
                             .user
                             .userId)
-                        .collection('Events')
+                        .collection('Events').orderBy('eventDate', descending: true)
                         .snapshots(),
                     builder: (BuildContext context,
                         AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -358,14 +399,20 @@ class _HomePageState extends State<HomePage>
                             children: snapshot.data.documents
                                 .map((DocumentSnapshot document) {
                               return Column(children: <Widget>[
-                                FadeAnimation(
-                                    1.2,
-                                    makeItem(
-                                        acceptType: document['acceptType'],
-                                        eventName: document['eventName'],
-                                        date:
-                                            (document['eventDate'] as Timestamp)
-                                                .toDate())),
+                                ListTile(
+                                  onTap: () {
+                                    //TODO
+                                    Navigator.of(context).pushNamed(EventPage.routeName, arguments: EventPageArgument(eventId: document.documentID, userId: (BlocProvider.of<AuthBloc>(context).state as AuthStateAuthenticated).user.userId));
+                                  },
+                                  title: FadeAnimation(
+                                      1.2,
+                                      makeItem(
+                                          acceptType: document['acceptType'],
+                                          eventName: document['eventName'],
+                                          date:
+                                              (document['eventDate'] as Timestamp)
+                                                  .toDate())),
+                                ),
                                 SizedBox(
                                   height: 20,
                                 ),
@@ -385,88 +432,63 @@ class _HomePageState extends State<HomePage>
     });
   }
 
-  Widget searchBox() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 17, vertical: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: <Widget>[
-          Expanded(
-            flex: 5,
-            child: Container(
-              height: 40,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(14)),
-                  color: Color.fromRGBO(238, 238, 238, 1)),
-              child: Row(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 15, right: 5, top: 2),
-                    child: Icon(
-                      Icons.search,
-                      size: 18,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                          hintText: "Search",
-                          hintStyle: TextStyle(color: Colors.grey),
-                          border: InputBorder.none),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 25),
-              child: MaterialButton(
-                onPressed: () async {
-                  final pickedFile =
-                      await picker.getImage(source: ImageSource.gallery);
-                  Navigator.of(context).pushNamed(EventPage.routeName,
-                      arguments:
-                          EventPageArgument(image: File(pickedFile.path)));
-//                  showCupertinoModalBottomSheet(
-//                    expand: false,
-//                    context: context,
-//                    backgroundColor: Colors.transparent,
-//                    builder: (context, scrollController) =>
-//                        AddEventModal(scrollController: scrollController),
-//                  );
-                },
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(14))),
-                height: 40,
-                minWidth: 50,
-                elevation: 0,
-                color: MyColors.primaryColor,
-                child: Row(
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: Icon(
-                        Icons.camera_alt,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text(
-                      'Add',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  void asyncOCR({image, userId}) async {
+//    print('');
+    final FirebaseVisionImage visionImage = FirebaseVisionImage.fromFile(image);
+    final TextRecognizer textRecognizer =
+        FirebaseVision.instance.textRecognizer();
+    final VisionText visionText =
+        await textRecognizer.processImage(visionImage);
+
+    List<String> itemNameList = <String>[];
+    List<double> itemValueList = <double>[];
+
+    RegExp _numeric = RegExp(r'^£?-?[0-9]+.?[0-9]+$');
+
+    for (TextBlock block in visionText.blocks) {
+//      print('***');
+      for (TextLine line in block.lines) {
+        String text = line.text;
+        if (_numeric.hasMatch(text)) {
+          if (text.contains('£')) {
+            text = text.substring(1);
+          }
+          itemValueList.add(double.parse(text));
+        } else {
+          itemNameList.add(text);
+        }
+      }
+    }
+    textRecognizer.close();
+
+//    itemNameList.forEach((element) {
+//      print(element);
+//    });
+//    itemValueList.forEach((element) {
+//      print(element);
+//    });
+
+    Timestamp timestamp = Timestamp.fromDate(DateTime.now());
+//    String userName = await Firestore.instance.collection('Users').document(userId).get().then((value) => value.data['userName']);
+    String eventId = await Firestore.instance.collection('Events').add({
+      'eventDate': timestamp,
+      'eventName': _eventName,
+      'ownerId': userId,
+      'totalValue': itemValueList.elementAt(itemValueList.length - 1),
+    }).then((value) => value.documentID);
+
+    await Firestore.instance.collection('Users').document(userId).collection('Events').document(eventId).setData({
+      'eventDate': timestamp,
+      'eventName': _eventName,
+      'acceptType': -1,
+    });
+
+    for (int index = 0; index < itemValueList.length - 1; index++) {
+      await Firestore.instance.collection('Events').document(eventId).collection('Menu').document(index.toString()).setData({
+        'itemName': itemNameList.elementAt(index),
+        'itemType': 0,
+        'itemValue': itemValueList.elementAt(index),
+      });
+    }
   }
 }
