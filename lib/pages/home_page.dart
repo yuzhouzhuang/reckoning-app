@@ -484,7 +484,11 @@ class _HomePageState extends State<HomePage>
     });
 
     for (int index = 0; index < itemValueList.length - 1; index++) {
-      await Firestore.instance.collection('Events').document(eventId).collection('Menu').document(index.toString()).setData({
+      String id = index.toString();
+      while (id.length < 8) {
+        id = '0' + id;
+      }
+      await Firestore.instance.collection('Events').document(eventId).collection('Menu').document(id).setData({
         'itemName': itemNameList.elementAt(index),
         'itemType': 0,
         'itemValue': itemValueList.elementAt(index),

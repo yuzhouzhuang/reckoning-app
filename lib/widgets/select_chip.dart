@@ -18,6 +18,7 @@ class SelectChip extends StatefulWidget {
 class _SelectChipState extends State<SelectChip> {
   int tag = 1;
   String title = 'loading';
+  String itemValue = '£0.00';
 //  List<String> tags = [];
 
   List<String> options = [
@@ -37,43 +38,166 @@ class _SelectChipState extends State<SelectChip> {
           .get(),
       builder:
           (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-
         if (snapshot.connectionState == ConnectionState.done) {
+          tag = snapshot.data['itemType'];
+          title = snapshot.data['itemName'];
+          itemValue = '£' + snapshot.data['itemValue'].toString();
+          if (!itemValue.contains('.')) {
+            itemValue += '.0';
+          }
+          return Card(
+            elevation: 2,
+            margin: EdgeInsets.all(5),
+            clipBehavior: Clip.antiAliasWithSaveLayer,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  height: 70,
+                  width: MediaQuery.of(context).size.width,
+                  padding: EdgeInsets.fromLTRB(15, 13, 15, 17),
+                  color: MyColors.primaryColor,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Expanded(
+                        flex: 3,
+                        child: TextFormField(
+//                          maxLength: 60,
+                          initialValue: title,
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                          ),
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500),
+                          onFieldSubmitted: (text) async {
+                            title = text;
+                            await Firestore.instance
+                                .collection('Events')
+                                .document(widget.eventId)
+                                .collection('Menu')
+                                .document(widget.itemId)
+                                .updateData({'itemName': text});
+                          },
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: TextFormField(
+//                          maxLength: 60,
+                          initialValue: itemValue,
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                          ),
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500),
+                          onFieldSubmitted: (text) async {
+                            itemValue = text;
+                            await Firestore.instance
+                                .collection('Events')
+                                .document(widget.eventId)
+                                .collection('Menu')
+                                .document(widget.itemId)
+                                .updateData({
+                              'itemValue': double.parse(text.substring(1))
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ChipsChoice<int>.single(
+                  //TODO
+                  value: tag,
+                  options: ChipsChoiceOption.listFrom<int, String>(
+                    source: options,
+                    value: (i, v) => i,
+                    label: (i, v) => v,
+                  ),
+                  onChanged: (val) async {
+                    setState(() {
+                      tag = val;
+                    });
 
-            tag = snapshot.data['itemType'];
-            title = snapshot.data['itemName'] +
-                ' ' +
-                snapshot.data['itemValue'].toString();
-          return Content(
-            title: title,
-            child: ChipsChoice<int>.single(
-              value: tag,
-              options: ChipsChoiceOption.listFrom<int, String>(
-                source: options,
-                value: (i, v) => i,
-                label: (i, v) => v,
-              ),
-              onChanged: (val) => setState(() async {
-                tag = val;
-                await Firestore.instance
-                    .collection('Events')
-                    .document(widget.eventId)
-                    .collection('Menu')
-                    .document(widget.itemId)
-                    .updateData({'itemType': tag});
-              }),
+                    await Firestore.instance
+                        .collection('Events')
+                        .document(widget.eventId)
+                        .collection('Menu')
+                        .document(widget.itemId)
+                        .updateData({'itemType': tag});
+                  },
+                ),
+              ],
             ),
           );
         }
-        return Content(
-          title: title,
-          child: ChipsChoice<int>.single(
-            value: tag,
-            options: ChipsChoiceOption.listFrom<int, String>(
-              source: options,
-              value: (i, v) => i,
-              label: (i, v) => v,
-            ), onChanged: (int value) {  },
+        return Card(
+          elevation: 2,
+          margin: EdgeInsets.all(5),
+          clipBehavior: Clip.antiAliasWithSaveLayer,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                width: MediaQuery.of(context).size.width,
+                padding: EdgeInsets.all(15),
+                height: 70,
+                color: MyColors.primaryColor,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 14),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Expanded(
+                        flex: 3,
+                        child: Text(
+                          title,
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          itemValue,
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              ChipsChoice<int>.single(
+                //TODO
+                value: tag,
+                options: ChipsChoiceOption.listFrom<int, String>(
+                  source: options,
+                  value: (i, v) => i,
+                  label: (i, v) => v,
+                ),
+                onChanged: (val) => setState(() async {
+                  tag = val;
+                  await Firestore.instance
+                      .collection('Events')
+                      .document(widget.eventId)
+                      .collection('Menu')
+                      .document(widget.itemId)
+                      .updateData({'itemType': tag});
+                }),
+              ),
+            ],
           ),
         );
       },
