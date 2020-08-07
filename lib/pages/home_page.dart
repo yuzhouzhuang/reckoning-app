@@ -402,7 +402,27 @@ class _HomePageState extends State<HomePage>
                                 ListTile(
                                   onTap: () {
                                     //TODO
-                                    Navigator.of(context).pushNamed(EventPage.routeName, arguments: EventPageArgument(eventId: document.documentID, userId: (BlocProvider.of<AuthBloc>(context).state as AuthStateAuthenticated).user.userId));
+                                    if (document.data['acceptType'] == -1) {
+                                      Navigator.of(context).pushNamed(
+                                          EventPage.routeName,
+                                          arguments: EventPageArgument(
+                                              eventId: document.documentID,
+                                              userId: (BlocProvider
+                                                  .of<AuthBloc>(context)
+                                                  .state as AuthStateAuthenticated)
+                                                  .user.userId));
+                                    } else if (document.data['acceptType'] == -2) {
+                                      //TODO
+
+                                      Navigator.of(context).pushNamed(
+                                          InvitePage.routeName,
+                                          arguments: EventPageArgument(
+                                              eventId: document.documentID,
+                                              userId: (BlocProvider
+                                                  .of<AuthBloc>(context)
+                                                  .state as AuthStateAuthenticated)
+                                                  .user.userId));
+                                    }
                                   },
                                   title: FadeAnimation(
                                       1.2,
@@ -489,7 +509,7 @@ class _HomePageState extends State<HomePage>
         id = '0' + id;
       }
       await Firestore.instance.collection('Events').document(eventId).collection('Menu').document(id).setData({
-        'itemName': itemNameList.elementAt(index),
+        'itemName': index < itemNameList.length ? itemNameList.elementAt(index) : 'Default item',
         'itemType': 0,
         'itemValue': itemValueList.elementAt(index),
       });

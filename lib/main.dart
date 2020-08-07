@@ -50,6 +50,9 @@ class MyApp extends StatelessWidget {
           case EventPage.routeName:
             return MaterialWithModalsPageRoute(
                 builder: (_) => EventPage(), settings: settings);
+          case InvitePage.routeName:
+            return MaterialWithModalsPageRoute(
+                builder: (_) => InvitePage(), settings: settings);
         }
         return MaterialWithModalsPageRoute(
             builder: (_) => SplashPage(), settings: settings);

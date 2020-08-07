@@ -143,15 +143,16 @@ class _EventPageState extends State<EventPage> {
               margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               constraints: const BoxConstraints(maxWidth: 500),
               child: RaisedButton(
-                onPressed: () {
-                  Firestore.instance
-                      .collection('User')
+                onPressed: () async {
+                  await Firestore.instance
+                      .collection('Users')
                       .document(args.userId)
                       .collection('Events')
                       .document(args.eventId)
                       .updateData({
                     'acceptType': -2,
                   });
+                  Navigator.of(context).pop();
 //                    asyncOCR();
 //                BlocProvider.of<AuthBloc>(context).add(AuthEventValidatePhoneNumber(smsCode: _pinPutController.text));
                 },
@@ -186,6 +187,7 @@ class _EventPageState extends State<EventPage> {
                 ),
               ),
             ),
+            SizedBox(height: 50,),
           ],
         ),
       ),

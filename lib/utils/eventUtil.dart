@@ -36,19 +36,21 @@ class EventUtil {
   static String getStatus(int acceptType) {
     switch (acceptType) {
       case 1:
-        return "Accept invitation";
+        return "Accept Invitation";
       case 2:
-        return "Invitation accepted";
+        return "Invitation Accepted";
       case 3:
-        return "Pay the bill";
+        return "Pay";
       case 4:
-        return "Bill payment finished";
+        return "Payment finished";
       case -1:
-        return "In progress";
+        return "Scan Bill";
+      case -2:
+        return "Send Invitation";
       case -3:
-        return "Bill sent out";
+        return "Split Bill";
       case -4:
-        return "Bill payment finished";
+        return "Check Payment";
       default:
         return "";
     }
@@ -57,13 +59,12 @@ class EventUtil {
   static Color getColor(int acceptType) {
     switch (acceptType) {
       case 1:
-      case -1:
-        return Colors.red.withOpacity(0.6);
-      case 2:
-        return MyColors.primaryColorLight;
       case 3:
+      case -1:
+      case -2:
       case -3:
         return Colors.red.withOpacity(0.6);
+      case 2:
       case 4:
       case -4:
         return MyColors.primaryColorLight;
