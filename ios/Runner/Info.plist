@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>io.flutter.embedded_views_preview</key>
+	<string>Yes</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Please!!!</string>
 	<key>NSCameraUsageDescription</key>
@@ -57,10 +59,8 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<false/>
+	<true/>
 	<key>UIUserInterfaceStyle</key>
-    <string>Light</string>
-    <key>UIViewControllerBasedStatusBarAppearance</key>
-    <true/>
+	<string>Light</string>
 </dict>
 </plist>

@@ -50,7 +50,7 @@ class EventUtil {
       case -3:
         return "Split Bill";
       case -4:
-        return "Check Payment";
+        return "Finished";
       default:
         return "";
     }

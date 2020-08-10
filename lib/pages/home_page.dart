@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterApp/Animation/FadeAnimation.dart';
@@ -261,6 +262,60 @@ class _HomePageState extends State<HomePage>
                     SizedBox(
                       height: 40,
                     ),
+                    FutureBuilder<DocumentSnapshot>(
+                      future: Firestore.instance
+                          .collection('Users')
+                          .document((BlocProvider.of<AuthBloc>(context).state
+                                  as AuthStateAuthenticated)
+                              .user
+                              .userId)
+                          .get(),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<DocumentSnapshot> snapshot) {
+                        if (snapshot.hasError) {
+                          return ListTile(
+                            title: Container(
+                              decoration: BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(4)),
+                                  color: Colors.grey.withOpacity(0.5)),
+                              child: TextFormField(
+                                initialValue: "Something went wrong",
+                              ),
+                            ),
+                          );
+                        }
+
+                        return ListTile(
+                          title: Container(
+                            decoration: BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(4)),
+                                color: Colors.white),
+                            child: TextFormField(
+                              onChanged: (text) {
+                                Firestore.instance
+                                    .collection('Users')
+                                    .document(
+                                        (BlocProvider.of<AuthBloc>(context)
+                                                    .state
+                                                as AuthStateAuthenticated)
+                                            .user
+                                            .userId)
+                                    .updateData({'url': text})
+                                    .then((value) => print("User url Updated"))
+                                    .catchError((error) => print(
+                                        "Failed to update user url: $error"));
+                              },
+                              initialValue: snapshot.data['url'],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    SizedBox(
+                      height: 40,
+                    ),
                     ListTile(
                       title: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -343,7 +398,12 @@ class _HomePageState extends State<HomePage>
                             onPressed: () async {
                               final pickedFile = await picker.getImage(
                                   source: ImageSource.gallery);
-                              asyncOCR(image: File(pickedFile.path), userId: (BlocProvider.of<AuthBloc>(context).state as AuthStateAuthenticated).user.userId);
+                              asyncOCR(
+                                  image: File(pickedFile.path),
+                                  userId: (BlocProvider.of<AuthBloc>(context)
+                                          .state as AuthStateAuthenticated)
+                                      .user
+                                      .userId);
                             },
                             shape: RoundedRectangleBorder(
                                 borderRadius:
@@ -384,7 +444,8 @@ class _HomePageState extends State<HomePage>
                                 as AuthStateAuthenticated)
                             .user
                             .userId)
-                        .collection('Events').orderBy('eventDate', descending: true)
+                        .collection('Events')
+                        .orderBy('eventDate', descending: true)
                         .snapshots(),
                     builder: (BuildContext context,
                         AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -400,28 +461,130 @@ class _HomePageState extends State<HomePage>
                                 .map((DocumentSnapshot document) {
                               return Column(children: <Widget>[
                                 ListTile(
-                                  onTap: () {
-                                    //TODO
+                                  onTap: () async {
                                     if (document.data['acceptType'] == -1) {
                                       Navigator.of(context).pushNamed(
                                           EventPage.routeName,
                                           arguments: EventPageArgument(
                                               eventId: document.documentID,
-                                              userId: (BlocProvider
-                                                  .of<AuthBloc>(context)
-                                                  .state as AuthStateAuthenticated)
-                                                  .user.userId));
-                                    } else if (document.data['acceptType'] == -2) {
+                                              userId: (BlocProvider.of<
+                                                              AuthBloc>(context)
+                                                          .state
+                                                      as AuthStateAuthenticated)
+                                                  .user
+                                                  .userId));
+                                    } else if (document.data['acceptType'] ==
+                                        -2) {
+                                      Navigator.of(context).pushNamed(
+                                          InvitePage.routeName,
+                                          arguments: EventPageArgument(
+                                              eventId: document.documentID,
+                                              userId: (BlocProvider.of<
+                                                              AuthBloc>(context)
+                                                          .state
+                                                      as AuthStateAuthenticated)
+                                                  .user
+                                                  .userId));
+                                    } else if (document.data['acceptType'] ==
+                                        -3) {
                                       //TODO
 
                                       Navigator.of(context).pushNamed(
                                           InvitePage.routeName,
                                           arguments: EventPageArgument(
                                               eventId: document.documentID,
-                                              userId: (BlocProvider
-                                                  .of<AuthBloc>(context)
-                                                  .state as AuthStateAuthenticated)
-                                                  .user.userId));
+                                              userId: (BlocProvider.of<
+                                                              AuthBloc>(context)
+                                                          .state
+                                                      as AuthStateAuthenticated)
+                                                  .user
+                                                  .userId));
+                                    } else if (document.data['acceptType'] ==
+                                        -4) {
+                                      //TODO
+
+                                      showDialog(
+                                          context: context,
+                                          child: CupertinoAlertDialog(
+                                            title: Text('Finished'),
+                                            content: Text('yeah!!!'),
+                                            actions: <Widget>[
+                                              Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Text(
+                                                  'Accept',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.w200,
+                                                      color: Colors.blueAccent,
+                                                      fontSize: 20),
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Text(
+                                                  'Accept',
+                                                  style: TextStyle(
+                                                      color: Colors.blue,
+                                                      fontSize: 20),
+                                                ),
+                                              ),
+                                            ],
+                                          ));
+                                    } else if (document.data['acceptType'] ==
+                                        1) {
+                                      //TODO
+                                      await Firestore.instance
+                                          .collection('Users')
+                                          .document((BlocProvider.of<AuthBloc>(
+                                                          context)
+                                                      .state
+                                                  as AuthStateAuthenticated)
+                                              .user
+                                              .userId)
+                                          .collection('Events')
+                                          .document(document.documentID)
+                                          .updateData({'acceptType': 2});
+
+                                      showDialog(
+                                          context: context,
+                                          child: CupertinoAlertDialog(
+                                              title:
+                                                  Text('Invitation Accepted')));
+                                    } else if (document.data['acceptType'] ==
+                                        2) {
+                                      //TODO
+
+                                      showDialog(
+                                          context: context,
+                                          child: CupertinoAlertDialog(
+                                              title:
+                                                  Text('Invitation Accepted')));
+                                    } else if (document.data['acceptType'] ==
+                                        3) {
+                                      //TODO
+
+                                      Navigator.of(context).push(
+                                          new MaterialPageRoute(builder: (_) {
+                                        return new Browser(
+                                          url:
+                                              "https://paypal.me/yuzhouzhuang/" +
+                                                  "45.7",
+                                        );
+                                      }));
+
+//                                      showDialog(
+//                                          context: context,
+//                                          child: CupertinoAlertDialog(
+//                                              title:
+//                                                  Text('Payment Finished?')));
+                                    } else if (document.data['acceptType'] ==
+                                        4) {
+                                      //TODO
+
+                                      showDialog(
+                                          context: context,
+                                          child: CupertinoAlertDialog(
+                                              title: Text('Payment Finished')));
                                     }
                                   },
                                   title: FadeAnimation(
@@ -429,9 +592,9 @@ class _HomePageState extends State<HomePage>
                                       makeItem(
                                           acceptType: document['acceptType'],
                                           eventName: document['eventName'],
-                                          date:
-                                              (document['eventDate'] as Timestamp)
-                                                  .toDate())),
+                                          date: (document['eventDate']
+                                                  as Timestamp)
+                                              .toDate())),
                                 ),
                                 SizedBox(
                                   height: 20,
@@ -497,7 +660,12 @@ class _HomePageState extends State<HomePage>
       'totalValue': itemValueList.elementAt(itemValueList.length - 1),
     }).then((value) => value.documentID);
 
-    await Firestore.instance.collection('Users').document(userId).collection('Events').document(eventId).setData({
+    await Firestore.instance
+        .collection('Users')
+        .document(userId)
+        .collection('Events')
+        .document(eventId)
+        .setData({
       'eventDate': timestamp,
       'eventName': _eventName,
       'acceptType': -1,
@@ -508,8 +676,15 @@ class _HomePageState extends State<HomePage>
       while (id.length < 8) {
         id = '0' + id;
       }
-      await Firestore.instance.collection('Events').document(eventId).collection('Menu').document(id).setData({
-        'itemName': index < itemNameList.length ? itemNameList.elementAt(index) : 'Default item',
+      await Firestore.instance
+          .collection('Events')
+          .document(eventId)
+          .collection('Menu')
+          .document(id)
+          .setData({
+        'itemName': index < itemNameList.length
+            ? itemNameList.elementAt(index)
+            : 'Default item',
         'itemType': 0,
         'itemValue': itemValueList.elementAt(index),
       });

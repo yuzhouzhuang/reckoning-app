@@ -112,7 +112,7 @@ class _InvitePageState extends State<InvitePage> {
                                 .document(idList.elementAt(0))
                                 .collection('Events')
                                 .document(args.eventId)
-                                .setData({'acceptType': idList.elementAt(0) == args.userId ? -2 : 1, 'payType': 1, 'paidAmount': 0, 'eventName': map['eventName'], 'eventDate': map['eventDate'],});
+                                .setData({'acceptType': idList.elementAt(0) == args.userId ? -2 : 1, 'eventName': map['eventName'], 'eventDate': map['eventDate'],});
 
                             await Firestore.instance
                                 .collection('Events')
