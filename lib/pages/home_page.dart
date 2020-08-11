@@ -260,7 +260,14 @@ class _HomePageState extends State<HomePage>
                       },
                     ),
                     SizedBox(
-                      height: 40,
+                      height: 20,
+                    ),
+                    ListTile(
+                      title: Text(
+                        'Update PayPal.Me Link:',
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
                     ),
                     FutureBuilder<DocumentSnapshot>(
                       future: Firestore.instance
@@ -475,21 +482,7 @@ class _HomePageState extends State<HomePage>
                                                   .userId));
                                     } else if (document.data['acceptType'] ==
                                         -2) {
-                                      Navigator.of(context).pushNamed(
-                                          InvitePage.routeName,
-                                          arguments: EventPageArgument(
-                                              eventId: document.documentID,
-                                              userId: (BlocProvider.of<
-                                                              AuthBloc>(context)
-                                                          .state
-                                                      as AuthStateAuthenticated)
-                                                  .user
-                                                  .userId));
-                                    } else if (document.data['acceptType'] ==
-                                        -3) {
-                                      //TODO
-
-                                      Navigator.of(context).pushNamed(
+                                      await Navigator.of(context).pushNamed(
                                           InvitePage.routeName,
                                           arguments: EventPageArgument(
                                               eventId: document.documentID,
@@ -507,32 +500,9 @@ class _HomePageState extends State<HomePage>
                                           context: context,
                                           child: CupertinoAlertDialog(
                                             title: Text('Finished'),
-                                            content: Text('yeah!!!'),
-                                            actions: <Widget>[
-                                              Padding(
-                                                padding: const EdgeInsets.all(8.0),
-                                                child: Text(
-                                                  'Accept',
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.w200,
-                                                      color: Colors.blueAccent,
-                                                      fontSize: 20),
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.all(8.0),
-                                                child: Text(
-                                                  'Accept',
-                                                  style: TextStyle(
-                                                      color: Colors.blue,
-                                                      fontSize: 20),
-                                                ),
-                                              ),
-                                            ],
                                           ));
                                     } else if (document.data['acceptType'] ==
                                         1) {
-                                      //TODO
                                       await Firestore.instance
                                           .collection('Users')
                                           .document((BlocProvider.of<AuthBloc>(
@@ -544,6 +514,18 @@ class _HomePageState extends State<HomePage>
                                           .collection('Events')
                                           .document(document.documentID)
                                           .updateData({'acceptType': 2});
+
+                                      await Firestore.instance
+                                          .collection('Events')
+                                          .document(document.documentID)
+                                          .collection('Groups')
+                                          .document((BlocProvider.of<AuthBloc>(
+                                                          context)
+                                                      .state
+                                                  as AuthStateAuthenticated)
+                                              .user
+                                              .phoneNumber)
+                                          .updateData({'accept': true});
 
                                       showDialog(
                                           context: context,
@@ -563,20 +545,56 @@ class _HomePageState extends State<HomePage>
                                         3) {
                                       //TODO
 
-                                      Navigator.of(context).push(
+                                      String ownerId = await Firestore.instance
+                                          .collection('Events')
+                                          .document(document.documentID)
+                                          .get()
+                                          .then(
+                                              (value) => value.data['ownerId']);
+
+                                      String url = await Firestore.instance
+                                          .collection('Users')
+                                          .document(ownerId)
+                                          .get()
+                                          .then((value) => value.data['url']);
+                                      Map<String, Object> bill = await Firestore.instance
+                                          .collection('Events')
+                                          .document(document.documentID)
+                                          .collection('Group')
+                                          .document((BlocProvider.of<AuthBloc>(
+                                                          context)
+                                                      .state
+                                                  as AuthStateAuthenticated)
+                                              .user
+                                              .phoneNumber)
+                                          .get()
+                                          .then((value) => value.data);
+
+                                      print(url + '/' +
+                                          ((bill['bill'] as num).toDouble() - (bill['paidAmount'] as num).toDouble()).toString());
+                                      await Navigator.of(context).push(
                                           new MaterialPageRoute(builder: (_) {
                                         return new Browser(
-                                          url:
-                                              "https://paypal.me/yuzhouzhuang/" +
-                                                  "45.7",
+                                          url: (url + '/' +
+                                              ((bill['bill'] as num).toDouble() - (bill['paidAmount'] as num).toDouble()).toString()),
                                         );
                                       }));
 
-//                                      showDialog(
-//                                          context: context,
-//                                          child: CupertinoAlertDialog(
-//                                              title:
-//                                                  Text('Payment Finished?')));
+                                      await Firestore.instance
+                                          .collection('Users')
+                                          .document((BlocProvider.of<AuthBloc>(
+                                                          context)
+                                                      .state
+                                                  as AuthStateAuthenticated)
+                                              .user
+                                              .userId)
+                                          .collection('Events')
+                                          .document(document.documentID)
+                                          .updateData({'acceptType': 4});
+                                      showDialog(
+                                          context: context,
+                                          child: CupertinoAlertDialog(
+                                              title: Text('Payment Finished')));
                                     } else if (document.data['acceptType'] ==
                                         4) {
                                       //TODO

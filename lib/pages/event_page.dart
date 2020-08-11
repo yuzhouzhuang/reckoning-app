@@ -7,6 +7,8 @@ import 'package:flutterApp/arguments/event_page_argument.dart';
 import 'package:flutterApp/theme.dart';
 import 'package:flutterApp/widgets/widgets.dart';
 
+import 'pages.dart';
+
 class EventPage extends StatefulWidget {
   static const routeName = '/eventPage';
 
@@ -152,7 +154,11 @@ class _EventPageState extends State<EventPage> {
                       .updateData({
                     'acceptType': -2,
                   });
-                  Navigator.of(context).pop();
+                  Navigator.of(context).popAndPushNamed(
+                      InvitePage.routeName,
+                      arguments: EventPageArgument(
+                          eventId: args.eventId,
+                          userId: args.userId));
 //                    asyncOCR();
 //                BlocProvider.of<AuthBloc>(context).add(AuthEventValidatePhoneNumber(smsCode: _pinPutController.text));
                 },

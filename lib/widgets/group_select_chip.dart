@@ -6,8 +6,9 @@ import 'package:flutterApp/theme.dart';
 class GroupSelectChip extends StatefulWidget {
   final String eventId;
   final String itemId;
+  final Color color;
 
-  const GroupSelectChip({Key key, this.eventId, this.itemId})
+  const GroupSelectChip({Key key, this.eventId, this.itemId, this.color})
       : super(key: key);
 
   @override
@@ -39,7 +40,8 @@ class _GroupSelectChipState extends State<GroupSelectChip> {
           (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           tag = snapshot.data['userType'];
-          title = '+44 ' + widget.itemId.substring(3);
+          //TODO
+          title = (snapshot.data['accept']? 'Accepted ' : 'Waiting ') + '+44 ' + widget.itemId.substring(3);
           paidAmount = '£' + snapshot.data['paidAmount'].toString();
           if (!paidAmount.contains('.')) {
             paidAmount += '.0';
@@ -55,7 +57,7 @@ class _GroupSelectChipState extends State<GroupSelectChip> {
                   height: 70,
                   width: MediaQuery.of(context).size.width,
                   padding: EdgeInsets.fromLTRB(15, 13, 15, 17),
-                  color: MyColors.primaryColor,
+                  color: widget.color,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -104,7 +106,6 @@ class _GroupSelectChipState extends State<GroupSelectChip> {
                   ),
                 ),
                 ChipsChoice<int>.single(
-                  //TODO
                   value: tag,
                   options: ChipsChoiceOption.listFrom<int, String>(
                     source: options,
@@ -139,7 +140,7 @@ class _GroupSelectChipState extends State<GroupSelectChip> {
                 width: MediaQuery.of(context).size.width,
                 padding: EdgeInsets.all(15),
                 height: 70,
-                color: MyColors.primaryColor,
+                color: widget.color,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 14),
                   child: Row(
@@ -171,7 +172,6 @@ class _GroupSelectChipState extends State<GroupSelectChip> {
                 ),
               ),
               ChipsChoice<int>.single(
-                //TODO
                 value: tag,
                 options: ChipsChoiceOption.listFrom<int, String>(
                   source: options,
