@@ -160,7 +160,7 @@ class _HomePageState extends State<HomePage>
       return Scaffold(
         backgroundColor: Colors.white,
         endDrawer: Container(
-          width: MediaQuery.of(context).size.width * 0.618,
+          width: MediaQuery.of(context).size.width * 0.66,
           height: MediaQuery.of(context).size.height,
           color: Colors.white,
           child: Column(
@@ -203,7 +203,7 @@ class _HomePageState extends State<HomePage>
                     ),
                     ListTile(
                       title: Text(
-                        'Update Username:',
+                        'Username:',
                         style: TextStyle(
                             fontSize: 15, fontWeight: FontWeight.bold),
                       ),
@@ -264,7 +264,7 @@ class _HomePageState extends State<HomePage>
                     ),
                     ListTile(
                       title: Text(
-                        'Update PayPal.Me Link:',
+                        'PayPal.Me Link:',
                         style: TextStyle(
                             fontSize: 15, fontWeight: FontWeight.bold),
                       ),
@@ -518,7 +518,7 @@ class _HomePageState extends State<HomePage>
                                       await Firestore.instance
                                           .collection('Events')
                                           .document(document.documentID)
-                                          .collection('Groups')
+                                          .collection('Group')
                                           .document((BlocProvider.of<AuthBloc>(
                                                           context)
                                                       .state

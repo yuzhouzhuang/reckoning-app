@@ -142,6 +142,7 @@ class _InvitePageState extends State<InvitePage> {
                               'userType': 0,
                               'paidAmount': 0,
                               'acceptType': false,
+                              'accept': false,
                             });
                           }
                         },
@@ -417,13 +418,63 @@ class _InvitePageState extends State<InvitePage> {
                           .document(element)
                           .updateData({'bill': adultAmount});
                     });
+                    await Firestore.instance
+                        .collection('Users')
+                        .document(args.userId)
+                        .collection('Events')
+                        .document(args.eventId)
+                        .updateData({'acceptType': -4});
+
+                    childList.forEach((element) async {
+                      List<String> idList = await Firestore.instance
+                          .collection('Users')
+                          .where('phone', isEqualTo: element)
+                          .getDocuments()
+                          .then((snapshot) => snapshot.documents
+                          .map((result) => result.documentID.toString())
+                          .toList());
+                      await Firestore.instance
+                          .collection('Users')
+                          .document(idList.elementAt(0))
+                          .collection('Events')
+                          .document(args.eventId)
+                          .updateData({'acceptType': 3});
+                    });
+
+                    adultList.forEach((element) async {
+                      List<String> idList = await Firestore.instance
+                          .collection('Users')
+                          .where('phone', isEqualTo: element)
+                          .getDocuments()
+                          .then((snapshot) => snapshot.documents
+                          .map((result) => result.documentID.toString())
+                          .toList());
+                      await Firestore.instance
+                          .collection('Users')
+                          .document(idList.elementAt(0))
+                          .collection('Events')
+                          .document(args.eventId)
+                          .updateData({'acceptType': 3});
+                    });
+
+                    nonDrinkerList.forEach((element) async {
+                      List<String> idList = await Firestore.instance
+                          .collection('Users')
+                          .where('phone', isEqualTo: element)
+                          .getDocuments()
+                          .then((snapshot) => snapshot.documents
+                          .map((result) => result.documentID.toString())
+                          .toList());
+                      await Firestore.instance
+                          .collection('Users')
+                          .document(idList.elementAt(0))
+                          .collection('Events')
+                          .document(args.eventId)
+                          .updateData({'acceptType': 3});
+                    });
+
                   }
-                  await Firestore.instance
-                      .collection('Users')
-                      .document(args.userId)
-                      .collection('Events')
-                      .document(args.eventId)
-                      .updateData({'acceptType': -4});
+
                   Navigator.of(context).pop();
 //                    asyncOCR();
 //                BlocProvider.of<AuthBloc>(context).add(AuthEventValidatePhoneNumber(smsCode: _pinPutController.text));
