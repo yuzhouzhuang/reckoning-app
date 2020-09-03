@@ -168,7 +168,7 @@ class _HomePageState extends State<HomePage>
               Expanded(
                 flex: 1,
                 child: Container(
-                  width: MediaQuery.of(context).size.width * 0.618,
+                  width: MediaQuery.of(context).size.width * 0.66,
                   color: MyColors.primaryColor,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
