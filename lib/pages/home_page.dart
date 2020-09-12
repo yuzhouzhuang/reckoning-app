@@ -634,7 +634,6 @@ class _HomePageState extends State<HomePage>
   }
 
   void asyncOCR({image, userId}) async {
-//    print('');
     final FirebaseVisionImage visionImage = FirebaseVisionImage.fromFile(image);
     final TextRecognizer textRecognizer =
         FirebaseVision.instance.textRecognizer();
@@ -647,7 +646,6 @@ class _HomePageState extends State<HomePage>
     RegExp _numeric = RegExp(r'^£?-?[0-9]+.?[0-9]+$');
 
     for (TextBlock block in visionText.blocks) {
-//      print('***');
       for (TextLine line in block.lines) {
         String text = line.text;
         if (_numeric.hasMatch(text)) {
@@ -661,16 +659,7 @@ class _HomePageState extends State<HomePage>
       }
     }
     textRecognizer.close();
-
-//    itemNameList.forEach((element) {
-//      print(element);
-//    });
-//    itemValueList.forEach((element) {
-//      print(element);
-//    });
-
     Timestamp timestamp = Timestamp.fromDate(DateTime.now());
-//    String userName = await Firestore.instance.collection('Users').document(userId).get().then((value) => value.data['userName']);
     String eventId = await Firestore.instance.collection('Events').add({
       'eventDate': timestamp,
       'eventName': _eventName,

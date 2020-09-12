@@ -33,7 +33,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final isAuthenticated = await UserRepository().isAuthenticated();
       if (isAuthenticated) {
-        yield AuthStateAuthenticated(user: await UserRepository().getUser());
+        yield AuthStateAuthenticated(
+            user: await UserRepository().getUser());
       } else {
         yield AuthStateUnauthenticated();
       }
@@ -56,10 +57,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         phoneNumber: ((state as AuthStateCodeSent).phoneNumber));
   }
 
-  Stream<AuthState> _mapValidatePhoneNumberToState(AuthEvent event) async* {
+  Stream<AuthState> _mapValidatePhoneNumberToState(AuthEvent event)
+  async*
+  {
     User _user = await UserRepository()
-        .validateOtpAndLogin((event as AuthEventValidatePhoneNumber).smsCode);
-    FirebaseUserInfoRepository userInfoRepository = FirebaseUserInfoRepository();
+        .validateOtpAndLogin(
+        (event as AuthEventValidatePhoneNumber).smsCode);
+    FirebaseUserInfoRepository userInfoRepository =
+        FirebaseUserInfoRepository();
     if (!(await userInfoRepository.hasUser(_user.userId))) {
       userInfoRepository.addNewUserEntity(
           UserEntity(_user.userId, "default", _user.phoneNumber));
